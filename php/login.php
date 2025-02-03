@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set session variables on successful login
         $_SESSION['logged_in'] = true;
         $_SESSION['username'] = $username;
-        header('Location: ../admin-console.php');  // Redirect to admin page
+        header('Location: ../admin-console/');  // Redirect to admin page
         exit;
     } else {
         $error = "Invalid username or password.";
@@ -33,7 +33,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <style>
         
-@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+@font-face {
+            font-family: 'Roboto';
+            src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Comfortaa';
+            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
 
 .login-page {
   width: 360px;
@@ -51,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
 }
 .form input {
-  font-family: "Roboto", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   outline: 0;
   background: #333;
   width: 100%;
@@ -139,7 +159,7 @@ h2{color:#fff;margin-top:-10px;}
 
   
     <form class="login-form" method="POST" action="login.php">
-      <img src="logo.png">
+      <img src="/../images/logo.png">
       <h2>Scouting Admin Login</h2>
         <input type="text"  placeholder="username" id="username" name="username" required><br>
 
