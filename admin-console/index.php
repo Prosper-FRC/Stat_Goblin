@@ -3,7 +3,7 @@ session_start();
 
 // Check if the user is logged in, if not redirect to the login page
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: /../scouting/login.php');
+    header('Location: /../scouting/php/login.php');
     exit;
 }
 
