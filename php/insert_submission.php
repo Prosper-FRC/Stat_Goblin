@@ -42,15 +42,34 @@ if ($action === 'delete_action') {
     // Prepare SQL query to delete the latest matching entry
     $sql = "DELETE FROM scouting_submissions 
             WHERE id = (SELECT id FROM (SELECT MAX(id) AS id FROM scouting_submissions 
-                                        WHERE ip_address = :ip_address 
+                                        WHERE robot = :robot 
                                         AND event_name = :event_name 
                                         AND match_no = :match_no) AS subquery)"; 
+
+
+ // Prepare the statement
+    $stmt = $pdo->prepare($sql);
+
+    // Bind parameters
+
+    $stmt->bindParam(':event_name', $event_name);
+    $stmt->bindParam(':match_no', $match_no);
+
+    $stmt->bindParam(':robot', $robot);
+
+
+
+
+
+
+
 } else { 
     // Prepare SQL query to insert data
     $sql = "INSERT INTO scouting_submissions (ip_address, event_name, match_no, time_sec, robot, alliance, action, location, result, points)
             VALUES (:ip_address, :event_name, :match_no, :time_sec, :robot, :alliance, :action, :location, :result, :points)";
-}
-    // Prepare the statement
+
+
+ // Prepare the statement
     $stmt = $pdo->prepare($sql);
 
     // Bind parameters
@@ -65,6 +84,12 @@ if ($action === 'delete_action') {
     $stmt->bindParam(':result', $result);
     $stmt->bindParam(':points', $points);
 
+
+
+
+
+}
+   
     // Execute the query
     if ($stmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Data inserted successfully']);
