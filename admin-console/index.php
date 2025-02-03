@@ -294,7 +294,7 @@ function updateTimer() {
 
         // Deactivate the match when the timer reaches 0
         if (matchId) {
-            fetch('/../php/deactivate_match.php', {
+            fetch('../php/deactivate_match.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
