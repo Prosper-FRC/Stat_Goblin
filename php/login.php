@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set session variables on successful login
         $_SESSION['logged_in'] = true;
         $_SESSION['username'] = $username;
-        header('Location: ../admin-console/');  // Redirect to admin page
+        header('Location: ../admin-console/index.php');  // Redirect to admin page
         exit;
     } else {
         $error = "Invalid username or password.";
