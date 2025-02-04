@@ -67,8 +67,11 @@
                "attempts_parked": 0,     // Typically endgame, but zeroed out here
                "plays_defense": 0,
                "attempts_to_descore": 0,
-               "disabled":0,
-               "delete_action":0,
+               "disabled": 0,
+               "delete_action": 0,
+               "auton_left": 0,
+               "auton_center": 0,
+               "auton_right": 0,
             };
             
             const actions = {
@@ -76,6 +79,12 @@
                "starting_position_1":{ "location": "starting_pad", "points": 0 },
                "starting_position_2":{ "location": "starting_pad", "points": 0 },
                "starting_position_3":{ "location": "starting_pad", "points": 0 },
+               "auton_left":{ "location": "starting_pad", "points": 0 },
+               "auton_center":{ "location": "starting_pad", "points": 0 },
+               "auton_right":{ "location": "starting_pad", "points": 0 },
+
+
+
 
                "picks_up_coral": {"location": "station", "points": 0},
                "scores_coral_level_1": { "location": "reef", "points": 1 },
