@@ -159,7 +159,7 @@ h2{color:#fff;margin-top:-10px;}
 
   
     <form class="login-form" method="POST" action="login.php">
-      <img src="/../images/logo.png">
+      <img src="../images/logo.png">
       <h2>Scouting Admin Login</h2>
         <input type="text"  placeholder="username" id="username" name="username" required><br>
 
