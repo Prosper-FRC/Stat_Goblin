@@ -1,9 +1,7 @@
 <?php
     // Database connection details
-    $host = 'localhost';
-    $dbname = 'frc_scouting';
-    $username = 'root';
-    $password = 'pw123456';
+    // Include the database connection
+    require_once '../php/database_connection.php'; // Adjust the path based on your directory structure
     try {
         // Create a PDO instance to connect to the database
         $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -30,7 +28,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>FRC Scouting Remote</title>
+        <title>FRC Scouting App</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Load jQuery & Chart.js -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> 
@@ -188,7 +186,7 @@
             position: relative;
             }
             .button {
-            padding: 1.5rem;
+            padding: .8rem;
             text-align: center;
             background-color: #222;
             color: #fff;
@@ -207,7 +205,7 @@
             color: #111;
             }
             .long-button { grid-column: span 2; } /* Spans both columns */
-            .PUC {grid-row: span 2; padding-top: 12%} 
+            .PUC {grid-row: span 2; } 
             /*
             .PUA { grid-row: span 2; border-radius: 50%; width:30%; margin-left: 28.5%; padding-top:15%; background-color: #8AE8E0;color:#111;border-color: #fff;border-width: 6px} 
             */
@@ -341,7 +339,7 @@
                 <div id="logoAndScoreboard">
                     <div id="logoOuter">
                         <img src="../images/logo.png" class="logo" alt="Logo">
-                        <h1>FRC Scouting Remote</h1>
+                        <h1>FRC Scouting App</h1>
                     </div>
                     <div id="scoreboardOuter">
                         <div id="scoreboard" class="alliance">
