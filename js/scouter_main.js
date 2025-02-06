@@ -347,7 +347,7 @@
             
                // Determine points based on time into the match
                let points = 0;
-               if (timeIntoMatch < 15) {
+               if (timeIntoMatch <= 18) {
                    // Use auto points if time into match is less than 15 seconds
                    points = auto_points[action.getAttribute('data-action')] || 0;
                } else {
