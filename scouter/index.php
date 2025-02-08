@@ -341,7 +341,7 @@
                 <div id="logoAndScoreboard">
                     <div id="logoOuter">
                         <img src="../images/grpyswpyLogo.webp" class="logo" alt="Logo">
-                        <h1>Reefscape Edition/h1>
+                        <h1>Reefscape Edition</h1>
                     </div>
                     <div id="scoreboardOuter">
                         <div id="scoreboard" class="alliance">
