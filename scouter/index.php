@@ -84,7 +84,9 @@
             h4 { font-size: 0.8rem; }
             /* Scrollable Container */
             #block {
-            background-color: #111;
+                position:absolute;
+            background-color:#111;
+            top:0;
             margin: auto;
             width: 100vw; /* Full width */
             max-width: 800px; /* Restrict to tablet dimensions */
@@ -338,8 +340,8 @@
             <div id="top">
                 <div id="logoAndScoreboard">
                     <div id="logoOuter">
-                        <img src="../images/logo.png" class="logo" alt="Logo">
-                        <h1>FRC Scouting App</h1>
+                        <img src="../images/grpyswpyLogo.webp" class="logo" alt="Logo">
+                        <h1>Reefscape Edition/h1>
                     </div>
                     <div id="scoreboardOuter">
                         <div id="scoreboard" class="alliance">
