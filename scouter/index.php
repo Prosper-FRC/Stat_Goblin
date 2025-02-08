@@ -60,8 +60,7 @@
             font-family: 'Comfortaa', sans-serif;
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+
             display: flex; /* Center the content */
             justify-content: center;
             background-color: #222; /* Dark background */
@@ -79,7 +78,7 @@
             margin: 0; /* Remove extra space */
             color: #ccc;
             }
-            h2 { font-size: 1.2rem; margin-top: -10px; color:#fff;}
+            h2 { font-size: 1.rem; margin-top: -10px; color:#fff;}
             h3 { font-size: 1rem; }
             h4 { font-size: 0.8rem; }
             /* Scrollable Container */
@@ -89,8 +88,9 @@
             top:0;
             margin: auto;
             width: 100vw; /* Full width */
-            max-width: 800px; /* Restrict to tablet dimensions */
-            max-height: 1280px;
+            /*max-width: 800px;  Restrict to tablet dimensions */
+            /*max-height: 1280px;*/
+        
             overflow: auto; /* Enable scrolling */
             scrollbar-width: thin; /* Firefox scrollbar */
             scrollbar-color: #888 #333; /* Thumb and track colors */
