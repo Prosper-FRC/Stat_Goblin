@@ -90,7 +90,7 @@
             width: 100vw; /* Full width */
             /*max-width: 800px;  Restrict to tablet dimensions */
             /*max-height: 1280px;*/
-        
+
             overflow: auto; /* Enable scrolling */
             scrollbar-width: thin; /* Firefox scrollbar */
             scrollbar-color: #888 #333; /* Thumb and track colors */
@@ -404,9 +404,9 @@
                         <img class="icon" src="/../scouting/icons/swipe_up_alt_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="threeBox">
-                        <div class="button algae circle" data-action="scores_algae_net">SAN
+                        <div class="button algae circle" data-action="scores_algae_net">Net
                         </div>
-                        <div class="button algae circle"  data-action="scores_algae_processor">SAP
+                        <div class="button algae circle"  data-action="scores_algae_processor">Pro
                         </div>
                     </div>
                     <div class="button opponent fontBig" data-action="plays_defense">Plays Defense
