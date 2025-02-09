@@ -122,7 +122,7 @@
             #logoOuter, #scoreboardOuter {
             width: 50%; /* Equal width for logo and scoreboard */
             }
-            .logo { width: 75%; }
+            .logo { width: 30%; }
             /* Scoreboard */
             #scoreboard {
             width: 94%;
@@ -352,7 +352,7 @@
                                 <div id="score-inner">0</div>
                             </div>
                         </div>
-                        <h2 id="eventName" style="margin-top:8px"></h2>
+                     <h2 id="eventName" style="margin-top:8px; display:none"></h2>
                     </div>
                 </div>
                 <div id="matchInfoOuter">
@@ -389,9 +389,13 @@
                     <div class="button long-button alliance fontBig" data-action="crosses_starting_line">Crosses Starting Line
                         <img class="icon" src="/../scouting/icons/commit_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
+
+
                     <div class="button coral PUC fontBig" data-action="picks_up_coral">Picks Up Coral
                         <img class="icon" src="/../scouting/icons/swipe_up_alt_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
+
+
                     <div class="threeBox">
                         <div class="button coral hex " data-action="scores_coral_level_1">SCL 1</div>
                         <div class="button coral hex" data-action="scores_coral_level_2">SCL 2</div>
@@ -427,7 +431,7 @@
                     <div class="button fontBig" data-action="disabled">Busted
                         <img class="icon" src="/../scouting/icons/sick_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
-                    <div class="button fontBig griffy" data-action="delete_action">Undo Last Action
+                    <div class="button fontBig griffy" data-action="delete_action">Undo 
                         <img class="icon" src="/../scouting/icons/undo_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                 </div>
