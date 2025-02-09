@@ -171,7 +171,7 @@
             #success, #failure {
             flex: 0 0 5%; /* Fixed width */
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1rem;
             opacity:60%;
             color: #fff;
             }
@@ -188,13 +188,13 @@
             position: relative;
             }
             .button {
-            padding: .8rem;
+          
             text-align: center;
             background-color: #222;
             color: #fff;
             border-radius: 5px;
             border: 1px solid #fff;
-            font-size: 0.9rem;
+     padding:1rem;
             cursor: pointer;
             transition: background-color 0.2s;
             }
@@ -238,7 +238,7 @@
             .input-box {
             width: 70px;
             height: 70px; /* Square inputs */
-            font-size: 2rem;
+           
             text-align: center;
             border: 2px solid #fff;
             background-color: #111;
@@ -257,7 +257,7 @@
             }
             #locationDisplay, #statusDisplay {
             text-align: center;
-            font-size: 1.2rem;
+           
             margin-bottom: 10px;
             }
             #coda {
@@ -274,7 +274,7 @@
             #bottomDisplays, #stat {
             width: 100%;
             text-align: center;
-            font-size: 1.2rem;
+         
             margin-top: 10px;
             }
             /* Animations */
@@ -301,19 +301,19 @@
             margin:auto;
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
             }
-            .fontBig{font-size: 2rem}
+            .fontBig{}
             .griffy{font-family: 'Griffy', sans-serif;}
             .button .icon {
             top: 5px;           /* Adjust top offset as needed */
             right: 5px;         /* Adjust right offset as needed */
-            width: 2.9rem;        /* Set a width for the icon */
+            width: 1rem;        /* Set a width for the icon */
             height: auto;       /* Maintain aspect ratio */
             pointer-events: none; /* Ensures clicks go through to the button */
             }
 
             .button .iconSmall {
 
-            width: 1.3rem;        /* Set a width for the icon */
+            width: 1rem;        /* Set a width for the icon */
             height: auto;       /* Maintain aspect ratio */
             pointer-events: none; /* Ensures clicks go through to the button */
             }
