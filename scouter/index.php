@@ -87,11 +87,11 @@
             background-color:#111;
             top:0;
             margin: auto;
-            width: 100vw; /* Full width */
-            /*max-width: 800px;  Restrict to tablet dimensions */
-            /*max-height: 1280px;*/
+        
+          max-width: 800px;    /*Restrict to tablet dimensions */
+          max-height: 1280px;
 
-            overflow: auto; /* Enable scrolling */
+    
             scrollbar-width: thin; /* Firefox scrollbar */
             scrollbar-color: #888 #333; /* Thumb and track colors */
             }
@@ -121,8 +121,9 @@
             }
             #logoOuter, #scoreboardOuter {
             width: 50%; /* Equal width for logo and scoreboard */
+
             }
-            .logo { width: 30%; }
+            .logo { width: 30%; margin-left:10%;}
             /* Scoreboard */
             #scoreboard {
             width: 94%;
@@ -207,7 +208,7 @@
             color: #111;
             }
             .long-button { grid-column: span 2; } /* Spans both columns */
-            .PUC {grid-row: span 2; } 
+            .PUC {grid-row: span 2; padding-top:10%} 
             /*
             .PUA { grid-row: span 2; border-radius: 50%; width:30%; margin-left: 28.5%; padding-top:15%; background-color: #8AE8E0;color:#111;border-color: #fff;border-width: 6px} 
             */
@@ -306,7 +307,7 @@
             .button .icon {
             top: 5px;           /* Adjust top offset as needed */
             right: 5px;         /* Adjust right offset as needed */
-            width: 1rem;        /* Set a width for the icon */
+            width: 1.5rem;        /* Set a width for the icon */
             height: auto;       /* Maintain aspect ratio */
             pointer-events: none; /* Ensures clicks go through to the button */
             }
