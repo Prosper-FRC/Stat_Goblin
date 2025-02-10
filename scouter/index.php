@@ -123,7 +123,7 @@
             width: 50%; /* Equal width for logo and scoreboard */
 
             }
-            .logo { width: 30%; margin-left:10%;}
+            .logo { width: 40%; margin-left:10%;}
             /* Scoreboard */
             #scoreboard {
             width: 94%;
@@ -341,7 +341,7 @@
             <div id="top">
                 <div id="logoAndScoreboard">
                     <div id="logoOuter">
-                        <img src="../images/grpyswpyLogo.webp" class="logo" alt="Logo">
+                        <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
                         <h1>Reefscape Edition</h1>
                     </div>
                     <div id="scoreboardOuter">
