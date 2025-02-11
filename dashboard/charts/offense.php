@@ -18,13 +18,13 @@ FROM (
 
         -- Count of offensive actions (excluding defensive ones)
         COUNT(CASE 
-            WHEN action NOT IN ('tipped_over', 'disabled', 'plays_defense', 'attempts_to_descore')  
+            WHEN action NOT IN ('tipped_over', 'disabled', 'plays_defense', 'attempts_to_steal')  
             THEN id 
         END) AS offensive_activities,
 
         -- Count of successful offensive actions
         COUNT(CASE 
-            WHEN action NOT IN ('tipped_over', 'disabled', 'plays_defense', 'attempts_to_descore') 
+            WHEN action NOT IN ('tipped_over', 'disabled', 'plays_defense', 'attempts_to_steal') 
               AND result = 'Success' 
             THEN id 
         END) AS successful_offensive_activities

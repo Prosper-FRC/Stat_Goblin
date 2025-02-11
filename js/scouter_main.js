@@ -66,7 +66,7 @@
                "attempts_deep_climb": 0, // Typically endgame, but zeroed out here
                "attempts_parked": 0,     // Typically endgame, but zeroed out here
                "plays_defense": 0,
-               "attempts_to_descore": 0,
+               "attempts_to_steal": 0,
                "disabled": 0,
                "delete_action": 0,
                "auton_left": 0,
@@ -98,7 +98,7 @@
                "attempts_deep_climb": { "location": "barge", "points": 12 },
                "attempts_parked": { "location": "barge", "points": 2 },
                "plays_defense": { "location": "opponent_side", "points": 0 },
-               "attempts_to_descore": { "location": "opponent_reef", "points": 0 },
+               "attempts_to_steal": { "location": "opponent_reef", "points": 0 },
                "disabled": { "location": "anywhere", "points": 0 },
                "delete_action": { "location": "anywhere", "points": 0 },
                

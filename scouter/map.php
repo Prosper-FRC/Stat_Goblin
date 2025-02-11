@@ -78,7 +78,7 @@
                         {top: '48.75%', left: '33.00%', action: 'scores_algae_net'},
                         {top: '48.75%', left: '40.50%', action: 'scores_algae_net'},
                         {top: '58.00%', left: '47.50%', action: 'plays_defense'},
-                        {top: '68.00%', left: '47.50%', action: 'attempts_to_descore'}
+                        {top: '68.00%', left: '47.50%', action: 'attempts_to_steal'}
                     ];
                     const overlay = document.querySelector(".button-overlay");
                     positions.forEach(pos => {
