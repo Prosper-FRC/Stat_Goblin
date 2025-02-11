@@ -251,7 +251,7 @@
                 <div class="button" data-action="attempts_parked">Attempts to Park</div>
                 
                 <div class="button" data-action="plays_defense">Plays Defense</div>
-                <div class="button" data-action="attempts_to_descore">Attempts to Descore</div>
+                <div class="button" data-action="attempts_to_steal">Attempts to Steal</div>
             </div>
 
             <!-- Location Display -->
@@ -284,7 +284,7 @@ const auto_points = {
     "attempts_deep_climb": 0, // Typically endgame, but zeroed out here
     "attempts_parked": 0,     // Typically endgame, but zeroed out here
     "plays_defense": 0,
-    "attempts_to_descore": 0,
+    "attempts_to_steal": 0,
 };
 
 const actions = {
@@ -300,7 +300,7 @@ const actions = {
     "attempts_deep_climb": { "location": "barge", "points": 12 },
     "attempts_parked": { "location": "barge", "points": 2 },
     "plays_defense": { "location": "opponent_side", "points": 0 },
-    "attempts_to_descore": { "location": "opponent_reef", "points": 0 },
+    "attempts_to_steal": { "location": "opponent_reef", "points": 0 },
 };
 
 // Initial score setup

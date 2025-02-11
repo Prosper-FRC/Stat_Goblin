@@ -417,7 +417,7 @@
                     <div class="button opponent fontBig" data-action="plays_defense">Plays Defense
                         <img class="icon" src="/../scouting/icons/shield_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
-                    <div class="button opponent fontBig" data-action="attempts_to_descore">Descore
+                    <div class="button opponent fontBig" data-action="attempts_to_steal">steal
                         <img class="icon" src="/../scouting/icons/encrypted_minus_circle_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button alliance fontBig" data-action="attempts_shallow_climb">Shallow Climb

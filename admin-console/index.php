@@ -242,7 +242,7 @@ if (isset($_POST['toggle_pause'])) {
         <?php endforeach; ?>
     </select>
 
-    <label for="match_number">Match Number:</label>
+
     <input type="number" name="match_number" id="match_number" required min="1" placeholder="Enter Match Number">
 
     <button type="submit" name="begin_match">Begin Match</button>
