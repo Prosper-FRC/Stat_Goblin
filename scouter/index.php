@@ -87,7 +87,7 @@
             background-color:#111;
             top:0;
             margin: auto;
-        
+        padding:12px;
           max-width: 800px;    /*Restrict to tablet dimensions */
           max-height: 1280px;
 
@@ -123,7 +123,7 @@
             width: 50%; /* Equal width for logo and scoreboard */
 
             }
-            .logo { width: 55%; margin-left:10%;}
+            .logo { width: 40%; margin-left:10%;}
             /* Scoreboard */
             #scoreboard {
             width: 94%;
@@ -195,7 +195,7 @@
             color: #fff;
             border-radius: 5px;
             border: 1px solid #fff;
-     padding:1rem;
+     padding:.66rem;
             cursor: pointer;
             transition: background-color 0.2s;
             }
