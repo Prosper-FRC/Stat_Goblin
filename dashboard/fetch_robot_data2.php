@@ -77,6 +77,47 @@ try {
         SET rc.auton_score = auton_data.auton_score
     ");
 
+
+
+    // Step 5: Update Scoring Counts for Each Level
+    for ($level = 1; $level <= 4; $level++) {
+        $stmt = $pdo->prepare("
+            UPDATE temp_robot_categories rc
+            JOIN (SELECT robot, COUNT(*) AS count_level_$level
+                  FROM scouting_submissions
+                  WHERE event_name = ? 
+                  AND action = 'scores_coral_level_$level' AND result = 'success'
+                  GROUP BY robot) 
+            AS level_data ON rc.robot = level_data.robot
+            SET rc.count_level_$level = level_data.count_level_$level
+        ");
+        $stmt->execute([$event_name]);
+    }
+
+$pdo->exec("
+    UPDATE temp_robot_categories rc
+    JOIN (
+        SELECT robot, action AS top_scoring_location
+        FROM (
+            SELECT robot, action, COUNT(*) AS score_count,
+                   ROW_NUMBER() OVER (PARTITION BY robot ORDER BY COUNT(*) DESC) AS rn
+            FROM scouting_submissions
+            WHERE event_name = '$event_name'
+              AND action IN ('scores_coral_level_1', 'scores_coral_level_2', 
+                             'scores_coral_level_3', 'scores_coral_level_4')
+              AND result = 'success'
+            GROUP BY robot, action
+        ) ranked
+        WHERE rn = 1
+    ) AS top_score_data ON rc.robot = top_score_data.robot
+    SET rc.top_scoring_location = top_score_data.top_scoring_location
+");
+
+
+
+
+
+
     // Step 6: Calculate Cooperative Score
     $pdo->exec("
         CREATE TEMPORARY TABLE IF NOT EXISTS match_scores AS
