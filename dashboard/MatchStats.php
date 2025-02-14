@@ -11,13 +11,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FRC Match Viewer with Robot Filter</title>
+
   <style>
-    /* Base Styling */
-    body {
-      font-family: "Helvetica Neue", Arial, sans-serif;
+ @font-face {
+            font-family: 'Roboto';
+            src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Comfortaa';
+            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            /* Global Styles */
+            body, html {
+            font-family: 'Comfortaa', sans-serif;
       margin: 0;
       padding: 0;
       background: #222;
@@ -35,7 +57,8 @@
       max-width: 800px;
       margin: auto;
     }
-    /* Grid container for the dropdowns */
+
+    /* Grid layout for dropdowns: 2 per row */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -62,7 +85,7 @@
       width: 100%;
       box-sizing: border-box;
     }
-    
+
     /* Robot Cards Layout */
     .robot-cards {
       display: flex;
@@ -79,33 +102,62 @@
       width: 100%;
       max-width: 700px;
       display: flex;
-      flex-direction: column; /* default column layout */
+      flex-direction: column;
       overflow: hidden;
     }
-    @media (min-width: 800px) {
-      .card {
-        flex-direction: row;  /* row layout on larger screens */
-      }
+
+    /* Top row: text on left, chart on right */
+    .top-row {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      padding: 1rem;
+      align-items: flex-start; /* keeps chart from floating up */
     }
     .robot-details {
-      padding: 1rem;
-      flex: 1;
+      flex: 1 1 auto;
     }
-    .robot-details h3 {
-      margin-top: 0;
-    }
-    .robot-details p {
-      margin: 0.25rem 0;
-    }
+
+    /* Chart container can have a fixed width or flexible width */
     .robot-chart {
-      flex: 0 0 300px;
-      height: 300px;
-      padding: 1rem;
+      flex: 0 0 400px; /* or flex: 1 1 auto; if you want it to grow more */
+      height: 400px;   /* make the chart taller */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.5rem;
     }
     .robot-chart canvas {
-      width: 100%;
-      height: 100%;
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
     }
+
+    /* Bottom row: full-width scoring breakdown table */
+    .scoring-breakdown {
+      width: 100%;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .scoring-breakdown h4 {
+      margin-top: 0;
+    }
+    .scoring-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .scoring-table th, .scoring-table td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .scoring-table th {
+      background: #f0f0f0;
+      color: #333;
+    }
+
     /* Hide filter list display */
     #robotFilterList {
       display: none;
@@ -116,26 +168,28 @@
       margin: 0 auto 1rem auto;
     }
   </style>
+
   <!-- Include Chart.js -->
   <script src="../js/Chart.bundle.js"></script>
   <script>
-    // Global variables
+    /******************************************
+     * Global variables & data fetching logic
+     ******************************************/
     let fetchedRobots = [];  // Raw robot data from server
     let filterRobots = [];   // Array of robot numbers to exclude
 
-    // Fetch matches based on event selection
+    // Called when the user selects an event
     function fetchMatches() {
       const eventName = document.getElementById("eventDropdown").value;
       const matchDropdown = document.getElementById("matchDropdown");
       const robotContainer = document.getElementById("robotContainer");
 
-      // Clear old matches and robot display
       matchDropdown.innerHTML = "<option value=''>-- Select Match --</option><option value='all'>All Matches</option>";
       robotContainer.innerHTML = "";
 
       if (!eventName) return;
 
-      let xhr = new XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
       xhr.open("GET", "fetch_matches.php?event_name=" + encodeURIComponent(eventName), true);
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -159,16 +213,17 @@
       xhr.send();
     }
 
-    // Fetch robots based on match selection
+    // Called when the user selects a match
     function fetchRobots() {
       const eventName = document.getElementById("eventDropdown").value;
       const matchNumber = document.getElementById("matchDropdown").value;
       const robotContainer = document.getElementById("robotContainer");
 
       robotContainer.innerHTML = "";
+
       if (!eventName || !matchNumber) return;
 
-      let xhr = new XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
       console.log("Event:", eventName, "Match Number:", matchNumber);
 
       if (matchNumber !== 'all') {
@@ -176,6 +231,7 @@
       } else {
         xhr.open("GET", "fetch_robot_data2.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
       }
+
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           console.log("Fetch Robots Raw Response:", xhr.responseText);
@@ -186,6 +242,7 @@
               robotContainer.innerHTML = `<p style="color:red;">${data.error}</p>`;
               return;
             }
+            // Some scripts return { robots: [...] }, some return [...]
             let robotsArray;
             if (Array.isArray(data)) {
               robotsArray = data;
@@ -195,14 +252,12 @@
               robotsArray = [data];
             }
             fetchedRobots = robotsArray;
-            // Reset the filter list when new data is fetched.
-            filterRobots = [];
+            filterRobots = []; // Reset the filter
             updateRobotCards();
-            // Populate the robot toggle dropdown with unique robot numbers.
             populateRobotToggleDropdown();
           } catch (error) {
             console.error("JSON Parsing Error:", error);
-            console.log("Response received:", xhr.responseText);
+            console.log("Response:", xhr.responseText);
             robotContainer.innerHTML = `<p style="color:red;">Error processing data. Check console.</p>`;
           }
         }
@@ -210,7 +265,7 @@
       xhr.send();
     }
 
-    // Populate the "Toggle Robot" dropdown with unique robot numbers.
+    // Populates the "Toggle Robot" dropdown for exclusion
     function populateRobotToggleDropdown() {
       const dropdown = document.getElementById("robotToggleDropdown");
       dropdown.innerHTML = "<option value=''>-- Select Robot --</option>";
@@ -223,36 +278,41 @@
       });
     }
 
-    // Toggle a robot number in the exclusion filter.
+    // Called when the user toggles a robot in the filter
     function toggleRobotFilter() {
       const dropdown = document.getElementById("robotToggleDropdown");
-      const selected = dropdown.value;
-      if (!selected) return;
-      const selectedNum = parseInt(selected, 10);
-      const index = filterRobots.indexOf(selectedNum);
-      if (index === -1) {
+      const selectedNum = parseInt(dropdown.value, 10);
+      if (!selectedNum) return;
+
+      const idx = filterRobots.indexOf(selectedNum);
+      if (idx === -1) {
         filterRobots.push(selectedNum);
       } else {
-        filterRobots.splice(index, 1);
+        filterRobots.splice(idx, 1);
       }
       updateRobotCards();
       dropdown.value = "";
     }
 
-    // Update displayed robot cards based on exclusion filter and sorting.
+    // Called when the user changes the "Sort by" dropdown
     function updateRobotCards() {
       const sortBy = document.getElementById("sortOption").value;
       let sorted = [...fetchedRobots];
+
       if (sortBy === "alliance") {
-        sorted.sort((a, b) => a.alliance.localeCompare(b.alliance));
+        sorted.sort((a, b) => (a.alliance || "Unknown").localeCompare(b.alliance || "Unknown"));
       } else {
-        sorted.sort((a, b) => b[sortBy] - a[sortBy]);
+        sorted.sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
       }
+
+      // Filter out any robot in filterRobots
       const finalList = sorted.filter(robot => !filterRobots.includes(parseInt(robot.robot, 10)));
       displayRobotCards(finalList);
     }
 
-    // Render robot cards with details and a simple bar chart.
+    /******************************************
+     * 2-Row Layout for Each Robot Card
+     ******************************************/
     function displayRobotCards(robots) {
       const container = document.getElementById("robotContainer");
       if (!container) {
@@ -260,43 +320,104 @@
         return;
       }
       container.innerHTML = "";
+
       let html = "";
       robots.forEach((robot, index) => {
         html += `
           <div class="robot-card card">
-            <div class="robot-details">
-              <h3>Robot ${robot.robot}</h3>
-              <p><strong>Alliance:</strong> ${robot.alliance}</p>
-              <p>Matches Played: ${robot.match_count}</p>
-              <p>Top Scoring Location: ${robot.top_scoring_location || "N/A"}</p>
-              <p>Offense Score: ${robot.offense_score}</p>
-              <p>Defense Score: ${robot.defense_score}</p>
-              <p>Auton Score: ${robot.auton_score}</p>
-              <p>Cooperative Score: ${parseFloat(robot.cooperative_score).toFixed(2)}</p>
-              <p>Scoring Breakdown:</p>
-              <ul>
-                <li>Level 1: ${robot.count_level_1}</li>
-                <li>Level 2: ${robot.count_level_2}</li>
-                <li>Level 3: ${robot.count_level_3}</li>
-                <li>Level 4: ${robot.count_level_4}</li>
-              </ul>
+            <!-- TOP ROW: text on the left, chart on the right -->
+            <div class="top-row">
+              <div class="robot-details">
+                <h3>Robot ${robot.robot}</h3>
+                <p><strong>Alliance:</strong> ${robot.alliance}</p>
+                <p>Matches Played: ${robot.match_count}</p>
+                <p>Top Scoring Location: ${robot.top_scoring_location || "N/A"}</p>
+                <p>Offense Score: ${robot.offense_score}</p>
+                <p>Defense Score: ${robot.defense_score}</p>
+                <p>Auton Score: ${robot.auton_score}</p>
+                <p>Cooperative Score: ${parseFloat(robot.cooperative_score).toFixed(2)}</p>
+              </div>
+              
+              <div class="robot-chart">
+                <canvas id="chart-${index}"></canvas>
+              </div>
             </div>
-            <div class="robot-chart">
-              <canvas id="chart-${index}"></canvas>
+            
+            <!-- BOTTOM ROW: full-width scoring breakdown table -->
+            <div class="scoring-breakdown">
+              <h4>Scoring Breakdown</h4>
+              <table class="scoring-table">
+                <thead>
+                  <tr>
+                    <th>Scoring Location</th>
+                    <th>Successes</th>
+                    <th>Attempts</th>
+                    <th>Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Level 1</td>
+                    <td>${robot.count_level_1 || 0}</td>
+                    <td>${robot.level1_attempts || 0}</td>
+                    <td>${(robot.level1_attempts > 0) 
+                      ? ((robot.count_level_1 / robot.level1_attempts) * 100).toFixed(1) + "%" 
+                      : "0%"}</td>
+                  </tr>
+                  <tr>
+                    <td>Level 2</td>
+                    <td>${robot.count_level_2 || 0}</td>
+                    <td>${robot.level2_attempts || 0}</td>
+                    <td>${(robot.level2_attempts > 0) 
+                      ? ((robot.count_level_2 / robot.level2_attempts) * 100).toFixed(1) + "%" 
+                      : "0%"}</td>
+                  </tr>
+                  <tr>
+                    <td>Level 3</td>
+                    <td>${robot.count_level_3 || 0}</td>
+                    <td>${robot.level3_attempts || 0}</td>
+                    <td>${(robot.level3_attempts > 0) 
+                      ? ((robot.count_level_3 / robot.level3_attempts) * 100).toFixed(1) + "%" 
+                      : "0%"}</td>
+                  </tr>
+                  <tr>
+                    <td>Level 4</td>
+                    <td>${robot.count_level_4 || 0}</td>
+                    <td>${robot.level4_attempts || 0}</td>
+                    <td>${(robot.level4_attempts > 0) 
+                      ? ((robot.count_level_4 / robot.level4_attempts) * 100).toFixed(1) + "%" 
+                      : "0%"}</td>
+                  </tr>
+                  <tr>
+                    <td>Algae Net</td>
+                    <td>${robot.algae_net_success || 0}</td>
+                    <td>${robot.algae_net_attempts || 0}</td>
+                    <td>${(robot.algae_net_attempts > 0) 
+                      ? ((robot.algae_net_success / robot.algae_net_attempts) * 100).toFixed(1) + "%" 
+                      : "0%"}</td>
+                  </tr>
+                  <tr>
+                    <td>Algae Proc</td>
+                    <td>${robot.algae_processor_success || 0}</td>
+                    <td>${robot.algae_processor_attempts || 0}</td>
+                    <td>${(robot.algae_processor_attempts > 0) 
+                      ? ((robot.algae_processor_success / robot.algae_processor_attempts) * 100).toFixed(1) + "%" 
+                      : "0%"}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         `;
       });
       container.innerHTML = html;
 
+      // Create the bar chart for each robot
       robots.forEach((robot, index) => {
         const canvas = document.getElementById(`chart-${index}`);
-        if (!canvas) {
-          console.error(`Canvas chart-${index} not found.`);
-          return;
-        }
-        const ctx = canvas.getContext("2d");
+        if (!canvas) return;
 
+        const ctx = canvas.getContext("2d");
         const offense = Number(robot.offense_score) || 0;
         const defense = Number(robot.defense_score) || 0;
         const auton = Number(robot.auton_score) || 0;
@@ -326,7 +447,7 @@
           }]
         };
 
-        const config = {
+        new Chart(ctx, {
           type: "bar",
           data: data,
           options: {
@@ -336,61 +457,68 @@
               x: { beginAtZero: true },
               y: { beginAtZero: true }
             },
-            plugins: { legend: { display: false } }
+            plugins: {
+              legend: { display: false }
+            }
           }
-        };
-
-        new Chart(ctx, config);
+        });
       });
     }
   </script>
 </head>
+
 <body>
   <div class="containerOuter">
     <div class="container">
       <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
+      
+      <!-- 2x2 Grid for Dropdowns -->
       <div class="grid-container">
         <div class="grid-item">
           <label for="eventDropdown"><strong>Select an Event:</strong></label>
           <select id="eventDropdown" onchange="fetchMatches()">
-              <option value="">-- Select Event --</option>
-              <?php foreach ($events as $event) { ?>
-                  <option value="<?php echo htmlspecialchars($event['event_name']); ?>">
-                      <?php echo htmlspecialchars($event['event_name']); ?>
-                  </option>
-              <?php } ?>
+            <option value="">-- Select Event --</option>
+            <!-- PHP code to populate events -->
+            <?php foreach ($events as $event) { ?>
+              <option value="<?php echo htmlspecialchars($event['event_name']); ?>">
+                <?php echo htmlspecialchars($event['event_name']); ?>
+              </option>
+            <?php } ?>
           </select>
         </div>
+        
         <div class="grid-item">
           <label for="matchDropdown"><strong>Select a Match:</strong></label>
           <select id="matchDropdown" onchange="fetchRobots()">
-              <option value="">-- Select Match --</option>
-              <option value="all">All Matches</option>
+            <option value="">-- Select Match --</option>
+            <option value="all">All Matches</option>
           </select>
         </div>
+        
         <div class="grid-item">
           <label for="sortOption"><strong>Sort by:</strong></label>
           <select id="sortOption" onchange="updateRobotCards()">
-              <option value="alliance" selected>Alliance</option>
-              <option value="offense_score">Offense Score</option>
-              <option value="defense_score">Defense Score</option>
-              <option value="cooperative_score">Cooperative Score</option>
+            <option value="alliance" selected>Alliance</option>
+            <option value="offense_score">Offense Score</option>
+            <option value="defense_score">Defense Score</option>
+            <option value="cooperative_score">Cooperative Score</option>
           </select>
         </div>
+        
         <div class="grid-item">
           <label for="robotToggleDropdown"><strong>Robot (Exclude):</strong></label>
           <select id="robotToggleDropdown" onchange="toggleRobotFilter()">
-              <option value="">-- Select Robot --</option>
+            <option value="">-- Select Robot --</option>
           </select>
         </div>
       </div>
+      
       <!-- Hidden filter list -->
       <input type="text" id="robotFilterList" readonly placeholder="Filter list" />
     </div>
   </div>
 
-  <div id="robotContainer" class="robot-cards">
-    <!-- Robot Cards will be displayed here -->
-  </div>
+  <!-- Robot cards container -->
+  <div id="robotContainer" class="robot-cards"></div>
 </body>
 </html>
