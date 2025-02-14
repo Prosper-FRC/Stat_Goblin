@@ -24,25 +24,43 @@
       color: #eee;
       line-height: 1.5;
     }
-    .container {
-      padding: 1rem;
-      text-align: center;
+    .containerOuter {
       background-color: #333;
       border-bottom: 1px solid #444;
+      width: 100%;
+      padding: 1rem;
+      box-sizing: border-box;
     }
-    .container label,
-    .container select,
-    .container input {
-      margin: 0.5rem;
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    /* Grid container for the dropdowns */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .grid-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .grid-item label {
+      margin-bottom: 0.3rem;
+      font-weight: bold;
       font-size: 1rem;
     }
-    .container select,
-    .container input {
+    .grid-item select,
+    .grid-item input {
       padding: 0.5rem;
       border-radius: 4px;
       border: 1px solid #555;
       background: #444;
       color: #eee;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     /* Robot Cards Layout */
@@ -80,7 +98,7 @@
       margin: 0.25rem 0;
     }
     .robot-chart {
-      flex: 0 0 300px; /* fixed width on larger screens */
+      flex: 0 0 300px;
       height: 300px;
       padding: 1rem;
     }
@@ -91,6 +109,11 @@
     /* Hide filter list display */
     #robotFilterList {
       display: none;
+    }
+    .logo {
+      width: 400px;
+      display: block;
+      margin: 0 auto 1rem auto;
     }
   </style>
   <!-- Include Chart.js -->
@@ -106,7 +129,7 @@
       const matchDropdown = document.getElementById("matchDropdown");
       const robotContainer = document.getElementById("robotContainer");
 
-      // Always show the dropdown; clear old matches
+      // Clear old matches and robot display
       matchDropdown.innerHTML = "<option value=''>-- Select Match --</option><option value='all'>All Matches</option>";
       robotContainer.innerHTML = "";
 
@@ -200,7 +223,7 @@
       });
     }
 
-    // Toggle a robot number in the filter list.
+    // Toggle a robot number in the exclusion filter.
     function toggleRobotFilter() {
       const dropdown = document.getElementById("robotToggleDropdown");
       const selected = dropdown.value;
@@ -323,43 +346,51 @@
   </script>
 </head>
 <body>
-  <div class="container">
-      <!-- Event Selection -->
-      <label><strong>Select an Event:</strong></label>
-      <select id="eventDropdown" onchange="fetchMatches()">
-          <option value="">-- Select Event --</option>
-          <?php foreach ($events as $event) { ?>
-              <option value="<?php echo htmlspecialchars($event['event_name']); ?>">
-                  <?php echo htmlspecialchars($event['event_name']); ?>
-              </option>
-          <?php } ?>
-      </select>
-
-      <!-- Match Selection (always visible) -->
-      <label><strong>Select a Match:</strong></label>
-      <select id="matchDropdown" onchange="fetchRobots()">
-          <option value="">-- Select Match --</option>
-          <option value="all">All Matches</option>
-      </select>
-<br>
-      <!-- Sort Dropdown (default sort is Alliance) -->
-      <label for="sortOption">Sort by:</label>
-      <select id="sortOption" onchange="updateRobotCards()">
-          <option value="alliance" selected>Alliance</option>
-          <option value="offense_score">Offense Score</option>
-          <option value="defense_score">Defense Score</option>
-          <option value="cooperative_score">Cooperative Score</option>
-      </select>
-
-      <!-- Robot Toggle Dropdown (for exclusion filter) -->
-      <label for="robotToggleDropdown">Toggle Robot (Exclude):</label>
-      <select id="robotToggleDropdown" onchange="toggleRobotFilter()">
-          <option value="">-- Select Robot --</option>
-      </select>
-
+  <div class="containerOuter">
+    <div class="container">
+      <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
+      <div class="grid-container">
+        <div class="grid-item">
+          <label for="eventDropdown"><strong>Select an Event:</strong></label>
+          <select id="eventDropdown" onchange="fetchMatches()">
+              <option value="">-- Select Event --</option>
+              <?php foreach ($events as $event) { ?>
+                  <option value="<?php echo htmlspecialchars($event['event_name']); ?>">
+                      <?php echo htmlspecialchars($event['event_name']); ?>
+                  </option>
+              <?php } ?>
+          </select>
+        </div>
+        <div class="grid-item">
+          <label for="matchDropdown"><strong>Select a Match:</strong></label>
+          <select id="matchDropdown" onchange="fetchRobots()">
+              <option value="">-- Select Match --</option>
+              <option value="all">All Matches</option>
+          </select>
+        </div>
+        <div class="grid-item">
+          <label for="sortOption"><strong>Sort by:</strong></label>
+          <select id="sortOption" onchange="updateRobotCards()">
+              <option value="alliance" selected>Alliance</option>
+              <option value="offense_score">Offense Score</option>
+              <option value="defense_score">Defense Score</option>
+              <option value="cooperative_score">Cooperative Score</option>
+          </select>
+        </div>
+        <div class="grid-item">
+          <label for="robotToggleDropdown"><strong>Robot (Exclude):</strong></label>
+          <select id="robotToggleDropdown" onchange="toggleRobotFilter()">
+              <option value="">-- Select Robot --</option>
+          </select>
+        </div>
+      </div>
       <!-- Hidden filter list -->
       <input type="text" id="robotFilterList" readonly placeholder="Filter list" />
+    </div>
   </div>
 
   <div id="robotContainer" class="robot-cards">
-      <!-
+    <!-- Robot Cards will be displayed here -->
+  </div>
+</body>
+</html>
