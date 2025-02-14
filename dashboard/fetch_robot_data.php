@@ -47,7 +47,7 @@ try {
     ");
     $stmt->execute([$event_name]);
 
-    // Step 3: Update Offense, Defense, and Auton Scores (same as before)
+    // Step 3: Update Offense, Defense, and Auton Scores 
     $queries = [
         "UPDATE temp_robot_categories rc
          JOIN (SELECT robot, COUNT(*) AS offense_score
@@ -124,7 +124,7 @@ try {
         $stmt->execute([$event_name]);
     }
 
-    // Step 7: Update Top Scoring Location for Coral Levels
+    // Step 7: Update Top Scoring Location 
     $pdo->exec("
         UPDATE temp_robot_categories rc
         JOIN (
@@ -134,7 +134,7 @@ try {
                        ROW_NUMBER() OVER (PARTITION BY robot ORDER BY COUNT(*) DESC) AS rn
                 FROM scouting_submissions
                 WHERE event_name = '$event_name'
-                  AND action IN ('scores_coral_level_1', 'scores_coral_level_2', 'scores_coral_level_3', 'scores_coral_level_4')
+                  AND action IN ('scores_coral_level_1', 'scores_coral_level_2', 'scores_coral_level_3', 'scores_coral_level_4', 'scores_algae_net', 'scores_algae_processor')
                   AND result = 'success'
                 GROUP BY robot, action
             ) ranked
