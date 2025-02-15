@@ -230,10 +230,12 @@ try {
 
     // Step 10: Fetch Final Data
     $robot_query = $pdo->query("
-        SELECT rc.*, 'n/a' as alliance
+        SELECT rc.*, COALESCE(ae.alliance, 'N/A') AS alliance
         FROM temp_robot_categories rc
-        
-        ORDER BY rc.offense_score desc
+        LEFT JOIN active_event ae 
+            ON rc.robot = ae.robot 
+           AND ae.event_name = '$event_name'
+        ORDER BY rc.robot ASC
     ");
     $robots = $robot_query->fetchAll(PDO::FETCH_ASSOC);
 
