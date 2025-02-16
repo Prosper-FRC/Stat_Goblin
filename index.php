@@ -94,7 +94,7 @@
           <label for="eventDropdown"><strong>Admin Console:</strong></label>
           
 
- <a href ="admin-console/"><img class="icon" src="icons/Admin.png" alt="Admin Console"></a>
+ <a href ="admin-console/"><img class="icon" src="icons/admin.png" alt="Admin Console"></a>
 
 
         </div>
