@@ -86,7 +86,7 @@ for rec in records:
 # We'll process matches 1 to 40.
 match_inserts = []  # will hold tuples for each row.
 
-for match_no in range(1, 41):
+for match_no in range(1, 80):
     if match_no not in matches:
         continue
     match_records = matches[match_no]

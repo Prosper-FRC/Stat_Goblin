@@ -63,7 +63,7 @@
 
             display: flex; /* Center the content */
             justify-content: center;
-            background-color: #222; /* Dark background */
+            background-color: #111; /* Dark background */
             color: #fff; /* High contrast text */
             }
             /* Headings */
@@ -84,7 +84,7 @@
             /* Scrollable Container */
             #block {
                 position:absolute;
-            background-color:#111;
+            background-color:#222;
             top:0;
             margin: auto;
         padding:12px;
@@ -378,22 +378,22 @@
                         <div class="button alliance circle" data-action="starting_position_2">S2</div>
                         <div class="button alliance circle" data-action="starting_position_3">S3</div>
                         <div class="button alliance circle auton" data-action="auton_left">
-                            <img class="iconSmall" src="/../scouting/icons/west.svg" alt="Exclamation Icon">
+                            <img class="iconSmall" src="/../stat_goblin/icons/west.svg" alt="Exclamation Icon">
                         </div>
                         <div class="button alliance circle auton" data-action="auton_center">
-                            <img class="iconSmall" src="/../scouting/icons/north.svg" alt="Exclamation Icon">      
+                            <img class="iconSmall" src="/../stat_goblin/icons/north.svg" alt="Exclamation Icon">      
                         </div>
                         <div class="button alliance circle auton" data-action="auton_right">
-                            <img class="iconSmall" src="/../scouting/icons/east.svg" alt="Exclamation Icon">
+                            <img class="iconSmall" src="/../stat_goblin/icons/east.svg" alt="Exclamation Icon">
                         </div>
                     </div>
                     <div class="button long-button alliance fontBig" data-action="crosses_starting_line">Crosses Starting Line
-                        <img class="icon" src="/../scouting/icons/commit_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/commit_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
 
 
                     <div class="button coral PUC fontBig" data-action="picks_up_coral">Picks Up Coral
-                        <img class="icon" src="/../scouting/icons/swipe_up_alt_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/swipe_up_alt_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
 
 
@@ -406,7 +406,7 @@
                         <div class="button coral hex" data-action="scores_coral_level_4">SCL 4</div>
                     </div>
                     <div class="button algae fontBig" data-action="picks_up_algae">Picks Up Algae
-                        <img class="icon" src="/../scouting/icons/swipe_up_alt_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/swipe_up_alt_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="threeBox">
                         <div class="button algae circle" data-action="scores_algae_net">Net
@@ -415,25 +415,25 @@
                         </div>
                     </div>
                     <div class="button opponent fontBig" data-action="plays_defense">Plays Defense
-                        <img class="icon" src="/../scouting/icons/shield_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/shield_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button opponent fontBig" data-action="attempts_to_steal">Steal
-                        <img class="icon" src="/../scouting/icons/encrypted_minus_circle_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/encrypted_minus_circle_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button alliance fontBig" data-action="attempts_shallow_climb">Shallow Climb
-                        <img class="icon" src="/../scouting/icons/hiking_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/hiking_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button alliance fontBig" data-action="attempts_deep_climb">Deep Climb
-                        <img class="icon" src="/../scouting/icons/hiking_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/hiking_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button long-button alliance fontBig" data-action="attempts_parked">Park
-                        <img class="icon" src="/../scouting/icons/bike_dock_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/bike_dock_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button fontBig" data-action="disabled">Busted
-                        <img class="icon" src="/../scouting/icons/sick_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/sick_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button fontBig griffy" data-action="delete_action">Undo 
-                        <img class="icon" src="/../scouting/icons/undo_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
+                        <img class="icon" src="/../stat_goblin/icons/undo_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                 </div>
                 <!--  <div id="failure"></div> -->

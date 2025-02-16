@@ -3,7 +3,7 @@ session_start();
 
 // Check if the user is logged in, if not redirect to the login page
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: /../scouting/php/login.php');
+    header('Location: /../stat_goblin/php/login.php');
     exit;
 }
 
@@ -139,10 +139,49 @@ if (isset($_POST['toggle_pause'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Console</title>
     <style>
-        body {
-            font-family: "Roboto", sans-serif;
-            color: #111;
-        }
+@font-face {
+            font-family: 'Roboto';
+            src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Comfortaa';
+            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            /* Global Styles */
+            body, html {
+            font-family: 'Comfortaa', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #222;
+      color: #eee;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .containerOuter {
+      background-color: #333;
+      border-bottom: 1px solid #444;
+      width: 100%;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+
         h1, h2, h3 {
             margin-bottom: 10px;
         }
@@ -167,10 +206,17 @@ if (isset($_POST['toggle_pause'])) {
             padding: 10px 20px;
             font-size: 16px;
         }
+            .logo {
+      width: 400px;
+      display: block;
+      margin: 0 auto 1rem auto;
+    }
     </style>
 </head>
 <body>
-
+<div class="containerOuter">
+    <div class="container">
+      <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
 <h1>Admin Console</h1>
 
 <!-- Feature 1: Manage Events -->
@@ -263,6 +309,8 @@ if (isset($_POST['toggle_pause'])) {
     <?php else: ?>
         <p>No active match.</p>
     <?php endif; ?>
+</div>
+</div>
 </div>
 
 <script>
