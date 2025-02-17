@@ -214,56 +214,61 @@
     }
 
     // Called when the user selects a match
-    function fetchRobots() {
-      const eventName = document.getElementById("eventDropdown").value;
-      const matchNumber = document.getElementById("matchDropdown").value;
-      const robotContainer = document.getElementById("robotContainer");
+function fetchRobots() {
+  const eventName = document.getElementById("eventDropdown").value;
+  const matchNumber = document.getElementById("matchDropdown").value;
+  const robotContainer = document.getElementById("robotContainer");
 
-      robotContainer.innerHTML = "";
+  robotContainer.innerHTML = "";
 
-      if (!eventName || !matchNumber) return;
+  if (!eventName || !matchNumber) return;
 
-      const xhr = new XMLHttpRequest();
-      console.log("Event:", eventName, "Match Number:", matchNumber);
+  const xhr = new XMLHttpRequest();
+  console.log("Event:", eventName, "Match Number:", matchNumber);
 
-      if (matchNumber !== 'all') {
-        xhr.open("GET", "fetch_robot_data.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
-      } else {
-        xhr.open("GET", "fetch_robot_data2.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
-      }
+  if (matchNumber !== 'all') {
+    xhr.open("GET", "fetch_robot_data.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
+  } else {
+    xhr.open("GET", "fetch_robot_data2.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
+  }
 
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          console.log("Fetch Robots Raw Response:", xhr.responseText);
-          try {
-            let data = JSON.parse(xhr.responseText);
-            if (data.error) {
-              console.error("Error:", data.error);
-              robotContainer.innerHTML = `<p style="color:red;">${data.error}</p>`;
-              return;
-            }
-            // Some scripts return { robots: [...] }, some return [...]
-            let robotsArray;
-            if (Array.isArray(data)) {
-              robotsArray = data;
-            } else if (data.robots && Array.isArray(data.robots)) {
-              robotsArray = data.robots;
-            } else {
-              robotsArray = [data];
-            }
-            fetchedRobots = robotsArray;
-            filterRobots = []; // Reset the filter
-            updateRobotCards();
-            populateRobotToggleDropdown();
-          } catch (error) {
-            console.error("JSON Parsing Error:", error);
-            console.log("Response:", xhr.responseText);
-            robotContainer.innerHTML = `<p style="color:red;">Error processing data. Check console.</p>`;
-          }
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      console.log("Fetch Robots Raw Response:", xhr.responseText);
+      try {
+        let data = JSON.parse(xhr.responseText);
+        if (data.error) {
+          console.error("Error:", data.error);
+          robotContainer.innerHTML = `<p style="color:red;">${data.error}</p>`;
+          return;
         }
-      };
-      xhr.send();
+        // Normalize the response to an array of robots
+        let robotsArray;
+        if (Array.isArray(data)) {
+          robotsArray = data;
+        } else if (data.robots && Array.isArray(data.robots)) {
+          robotsArray = data.robots;
+        } else {
+          robotsArray = [data];
+        }
+        fetchedRobots = robotsArray;
+        filterRobots = []; // Reset the filter
+        updateRobotCards();
+        populateRobotToggleDropdown();
+
+        // Now that robot data is loaded, call the prediction function directly:
+        runPrediction();
+      } catch (error) {
+        console.error("JSON Parsing Error:", error);
+        console.log("Response:", xhr.responseText);
+        robotContainer.innerHTML = `<p style="color:red;">Error processing data. Check console.</p>`;
+      }
     }
+  };
+  xhr.send();
+}
+
+
 
     // Populates the "Toggle Robot" dropdown for exclusion
     function populateRobotToggleDropdown() {
@@ -464,6 +469,138 @@
         });
       });
     }
+
+
+
+
+
+
+    function runPrediction() {
+  // Get the selected event and match
+  const eventName = document.getElementById("eventDropdown").value;
+  const matchNumber = document.getElementById("matchDropdown").value;
+  
+  // Build alliance arrays from the already-fetched robot data
+  let blueAlliance = [];
+  let redAlliance = [];
+  fetchedRobots.forEach(function(robot) {
+    if (robot.alliance && robot.alliance.toLowerCase() === "blue") {
+      blueAlliance.push(robot.robot.toString().trim());
+    } else if (robot.alliance && robot.alliance.toLowerCase() === "red") {
+      redAlliance.push(robot.robot.toString().trim());
+    }
+  });
+  
+  let hist_weight = 0.5;
+  // Build the API URL for predict.php
+  let apiUrl = `predict.php?event_name=${encodeURIComponent(eventName)}&match_no=${encodeURIComponent(matchNumber)}&blue_alliance=${encodeURIComponent(blueAlliance.join(','))}&red_alliance=${encodeURIComponent(redAlliance.join(','))}&hist_weight=${encodeURIComponent(hist_weight)}`;
+  console.log("Prediction API URL:", apiUrl);
+  
+  // Update the prediction card with a loading message
+  let resultDiv = document.getElementById("predictionResult");
+  resultDiv.innerHTML = "Predicting, please wait...";
+  
+  // Make the AJAX request using fetch
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+        console.log("Prediction Data:", data);
+        if(data.error) {
+            resultDiv.innerHTML = `<span style="color:red;">Error: ${data.error}</span>`;
+        } else {
+            // Build result HTML (customize as needed)
+            let html = `<strong>Event:</strong> ${data.event_name}<br>`;
+            html += `<strong>Match No:</strong> ${data.match_no}<br>`;
+            html += `<strong>Blue Alliance Score:</strong> ${data.blue_score}<br>`;
+            html += `<strong>Red Alliance Score:</strong> ${data.red_score}<br>`;
+            html += `<strong>Predicted Winner:</strong> ${data.predicted_winner}<br><br>`;
+            // (Add your alliance tables here as needed)
+
+  html += `<h2>Blue Alliance</h2>`;
+              html += `<table border="1" cellspacing="0" cellpadding="4">
+                        <thead>
+                          <tr>
+                            <th>Robot</th>
+                            <th>Total Points</th>
+                            <th>Avg Points/Match</th>
+                            <th>Success Rate</th>
+                            <th>Success Rate Slope</th>
+                            <th>Total Events</th>
+                            <th>Total Events Slope</th>
+                            <th>Points Slope</th>
+                            <th>Predicted Next Points</th>
+                            <th>Matches</th>
+                            <th>Most Common Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+              data.blue_stats.forEach(robotStat => {
+                  html += `<tr>
+                            <td>${robotStat.robot}</td>
+                            <td>${robotStat.total_points}</td>
+                            <td>${robotStat.avg_points_per_match}</td>
+                            <td>${robotStat.success_rate}</td>
+                            <td>${robotStat.success_rate_slope}</td>
+                            <td>${robotStat.total_events}</td>
+                            <td>${robotStat.total_events_slope}</td>
+                            <td>${robotStat.points_slope}</td>
+                            <td>${robotStat.predicted_next_points}</td>
+                            <td>${robotStat.matches}</td>
+                            <td>${robotStat.most_common_action || ""}</td>
+                          </tr>`;
+              });
+              html += `</tbody></table>`;
+              
+              // Red Alliance Table
+              html += `<h2>Red Alliance</h2>`;
+              html += `<table border="1" cellspacing="0" cellpadding="4">
+                        <thead>
+                          <tr>
+                            <th>Robot</th>
+                            <th>Total Points</th>
+                            <th>Avg Points/Match</th>
+                            <th>Success Rate</th>
+                            <th>Success Rate Slope</th>
+                            <th>Total Events</th>
+                            <th>Total Events Slope</th>
+                            <th>Points Slope</th>
+                            <th>Predicted Next Points</th>
+                            <th>Matches</th>
+                            <th>Most Common Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+              data.red_stats.forEach(robotStat => {
+                  html += `<tr>
+                            <td>${robotStat.robot}</td>
+                            <td>${robotStat.total_points}</td>
+                            <td>${robotStat.avg_points_per_match}</td>
+                            <td>${robotStat.success_rate}</td>
+                            <td>${robotStat.success_rate_slope}</td>
+                            <td>${robotStat.total_events}</td>
+                            <td>${robotStat.total_events_slope}</td>
+                            <td>${robotStat.points_slope}</td>
+                            <td>${robotStat.predicted_next_points}</td>
+                            <td>${robotStat.matches}</td>
+                            <td>${robotStat.most_common_action || ""}</td>
+                          </tr>`;
+              });
+              html += `</tbody></table>`;
+
+
+
+
+
+            
+            resultDiv.innerHTML = html;
+        }
+    })
+    .catch(error => {
+        console.error("Fetch error:", error);
+        resultDiv.innerHTML = `<span style="color:red;">Fetch error: ${error}</span>`;
+    });
+}
+
   </script>
 </head>
 
@@ -519,6 +656,163 @@
   </div>
 
   <!-- Robot cards container -->
+  <!-- Prediction Card -->
+<div id="predictionCard" class="card" style="max-width:700px; margin: 1rem auto; padding: 1rem;">
+  <div class="top-row">
+    <div class="robot-details">
+      <h3>Match Prediction</h3>
+      <p id="predictionResult">Click the button below to predict the match outcome.</p>
+      <button id="predictButton" style="padding: 0.5rem 1rem; font-size:1rem;">Predict Outcome</button>
+    </div>
+  </div>
+</div>
+
   <div id="robotContainer" class="robot-cards"></div>
 </body>
+
+<script type="text/javascript">
+
+document.getElementById('matchDropdown').addEventListener('change', function() {
+
+
+
+    // Get the selected event name and match number
+    let eventName = document.getElementById("eventDropdown").value;
+    let matchNumber = document.getElementById("matchDropdown").value;
+    
+    // Ensure required parameters are set
+    if (!eventName || !matchNumber || matchNumber === "") {
+        console.warn("Missing required parameters.");
+        return;
+    }
+    
+    // Optionally check that you have robots loaded
+    if (!fetchedRobots || fetchedRobots.length === 0) {
+        console.warn("No robot data available yet.");
+        return;
+    }
+    
+    // Proceed to build the alliances (as before)
+    let blueAlliance = [];
+    let redAlliance = [];
+    fetchedRobots.forEach(function(robot) {
+        if (robot.alliance && robot.alliance.toLowerCase() === "blue") {
+            blueAlliance.push(robot.robot.toString().trim());
+        } else if (robot.alliance && robot.alliance.toLowerCase() === "red") {
+            redAlliance.push(robot.robot.toString().trim());
+        }
+    });
+    
+    // Set your historical weight (or get it from another input if needed)
+    let hist_weight = 0.5;
+    
+    // Build the API URL
+    let apiUrl = `predict.php?event_name=${encodeURIComponent(eventName)}&match_no=${encodeURIComponent(matchNumber)}&blue_alliance=${encodeURIComponent(blueAlliance.join(','))}&red_alliance=${encodeURIComponent(redAlliance.join(','))}&hist_weight=${encodeURIComponent(hist_weight)}`;
+    
+    console.log("Prediction API URL:", apiUrl);
+    
+    // Update the prediction card with a loading message
+    let resultDiv = document.getElementById("predictionResult");
+    resultDiv.innerHTML = "Predicting, please wait...";
+    
+    // Make the AJAX request using fetch
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+          console.log("Prediction Data:", data);
+          if (data.error) {
+              resultDiv.innerHTML = `<span style="color:red;">Error: ${data.error}</span>`;
+          } else {
+              // Build result HTML (including tables as needed)
+              let html = `<strong>Event:</strong> ${data.event_name}<br>`;
+              html += `<strong>Match No:</strong> ${data.match_no}<br>`;
+              html += `<strong>Blue Alliance Score:</strong> ${data.blue_score}<br>`;
+              html += `<strong>Red Alliance Score:</strong> ${data.red_score}<br>`;
+              html += `<strong>Predicted Winner:</strong> ${data.predicted_winner}<br><br>`;
+              
+              // Blue Alliance Table
+              html += `<h2>Blue Alliance</h2>`;
+              html += `<table border="1" cellspacing="0" cellpadding="4">
+                        <thead>
+                          <tr>
+                            <th>Robot</th>
+                            <th>Total Points</th>
+                            <th>Avg Points/Match</th>
+                            <th>Success Rate</th>
+                            <th>Success Rate Slope</th>
+                            <th>Total Events</th>
+                            <th>Total Events Slope</th>
+                            <th>Points Slope</th>
+                            <th>Predicted Next Points</th>
+                            <th>Matches</th>
+                            <th>Most Common Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+              data.blue_stats.forEach(robotStat => {
+                  html += `<tr>
+                            <td>${robotStat.robot}</td>
+                            <td>${robotStat.total_points}</td>
+                            <td>${robotStat.avg_points_per_match}</td>
+                            <td>${robotStat.success_rate}</td>
+                            <td>${robotStat.success_rate_slope}</td>
+                            <td>${robotStat.total_events}</td>
+                            <td>${robotStat.total_events_slope}</td>
+                            <td>${robotStat.points_slope}</td>
+                            <td>${robotStat.predicted_next_points}</td>
+                            <td>${robotStat.matches}</td>
+                            <td>${robotStat.most_common_action || ""}</td>
+                          </tr>`;
+              });
+              html += `</tbody></table>`;
+              
+              // Red Alliance Table
+              html += `<h2>Red Alliance</h2>`;
+              html += `<table border="1" cellspacing="0" cellpadding="4">
+                        <thead>
+                          <tr>
+                            <th>Robot</th>
+                            <th>Total Points</th>
+                            <th>Avg Points/Match</th>
+                            <th>Success Rate</th>
+                            <th>Success Rate Slope</th>
+                            <th>Total Events</th>
+                            <th>Total Events Slope</th>
+                            <th>Points Slope</th>
+                            <th>Predicted Next Points</th>
+                            <th>Matches</th>
+                            <th>Most Common Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+              data.red_stats.forEach(robotStat => {
+                  html += `<tr>
+                            <td>${robotStat.robot}</td>
+                            <td>${robotStat.total_points}</td>
+                            <td>${robotStat.avg_points_per_match}</td>
+                            <td>${robotStat.success_rate}</td>
+                            <td>${robotStat.success_rate_slope}</td>
+                            <td>${robotStat.total_events}</td>
+                            <td>${robotStat.total_events_slope}</td>
+                            <td>${robotStat.points_slope}</td>
+                            <td>${robotStat.predicted_next_points}</td>
+                            <td>${robotStat.matches}</td>
+                            <td>${robotStat.most_common_action || ""}</td>
+                          </tr>`;
+              });
+              html += `</tbody></table>`;
+              
+              resultDiv.innerHTML = html;
+          }
+      })
+      .catch(error => {
+          console.error("Fetch error:", error);
+          resultDiv.innerHTML = `<span style="color:red;">Fetch error: ${error}</span>`;
+      });
+});
+
+
+
+
+</script>
 </html>
