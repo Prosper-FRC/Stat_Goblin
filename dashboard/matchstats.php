@@ -832,7 +832,7 @@
       }
       // First, fetch robot cards. After a short delay, fetch prediction data.
       fetchRobotCards();
-      setTimeout(fetchPrediction, 500);
+     
     });
 
 
