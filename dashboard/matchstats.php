@@ -257,44 +257,55 @@
     }
     
     // Fetch robot card data from fetch_robot_data.php (or fetch_robot_data2.php).
-    function fetchRobotCards() {
-      const eventName = document.getElementById("eventDropdown").value;
-      const matchNumber = document.getElementById("matchDropdown").value;
-      const robotContainer = document.getElementById("robotContainer");
-      robotContainer.innerHTML = "";
-      if (!eventName || !matchNumber) return;
-      const xhr = new XMLHttpRequest();
-      console.log("Fetching robot cards for:", eventName, matchNumber);
-      if (matchNumber !== 'all') {
-        xhr.open("GET", "fetch_robot_data.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
-      } else {
-        xhr.open("GET", "fetch_robot_data2.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
-      }
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          console.log("Robot Cards Raw Response:", xhr.responseText);
-          try {
-            let data = JSON.parse(xhr.responseText);
-            if (data.error) {
-              console.error("Error:", data.error);
-              robotContainer.innerHTML = `<p style="color:red;">${data.error}</p>`;
-              return;
-            }
-            // Normalize data to an array.
-            let robotsArray = Array.isArray(data) ? data : (data.robots && Array.isArray(data.robots)) ? data.robots : [data];
-            fetchedRobots = robotsArray;
-            filterRobots = [];
-            updateRobotCards();
-            populateRobotToggleDropdown();
-          } catch (error) {
-            console.error("JSON Parsing Error:", error);
-            console.log("Response:", xhr.responseText);
-            robotContainer.innerHTML = `<p style="color:red;">Error processing robot data. Check console.</p>`;
-          }
+   function fetchRobotCards() {
+  const eventName = document.getElementById("eventDropdown").value;
+  const matchNumber = document.getElementById("matchDropdown").value;
+  const robotContainer = document.getElementById("robotContainer");
+  robotContainer.innerHTML = "";
+  if (!eventName || !matchNumber) return;
+  
+  const xhr = new XMLHttpRequest();
+  console.log("Fetching robot cards for:", eventName, matchNumber);
+  if (matchNumber !== 'all') {
+    xhr.open("GET", "fetch_robot_data.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
+  } else {
+    xhr.open("GET", "fetch_robot_data2.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber), true);
+  }
+  
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      console.log("Robot Cards Raw Response:", xhr.responseText);
+      try {
+        let data = JSON.parse(xhr.responseText);
+        if (data.error) {
+          console.error("Error:", data.error);
+          robotContainer.innerHTML = `<p style="color:red;">${data.error}</p>`;
+          return;
         }
-      };
-      xhr.send();
+        // Normalize data to an array.
+        let robotsArray = Array.isArray(data)
+          ? data
+          : (data.robots && Array.isArray(data.robots))
+          ? data.robots
+          : [data];
+        fetchedRobots = robotsArray;
+        filterRobots = [];
+        updateRobotCards();
+        populateRobotToggleDropdown();
+        // Now that robot data is fully received, call fetchPrediction()
+        fetchPrediction();
+      } catch (error) {
+        console.error("JSON Parsing Error:", error);
+        console.log("Response:", xhr.responseText);
+        robotContainer.innerHTML = `<p style="color:red;">Error processing robot data. Check console.</p>`;
+      }
     }
+  };
+  xhr.send();
+}
+
+
+
     
     // Fetch aggregated prediction data from predict.php.
     function fetchPrediction() {
@@ -765,7 +776,7 @@
         </div>
         <div class="grid-item">
           <label for="matchDropdown"><strong>Select a Match:</strong></label>
-          <select id="matchDropdown" onchange="fetchRobotCards(); setTimeout(fetchPrediction, 500);">
+          <select id="matchDropdown" onchange="fetchRobotCards();">
             <option value="">-- Select Match --</option>
             <option value="all">All Matches</option>
           </select>
