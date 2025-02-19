@@ -209,6 +209,55 @@
 
 
 
+
+
+
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  font-weight: bold;
+  font-family: monospace;
+  display: inline-grid;
+  font-size: 30px;
+}
+.loader:before,
+.loader:after {
+  content:"Loading...";
+  grid-area: 1/1;
+  -webkit-mask-size: 2ch 100%,100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+          mask-composite:exclude;
+  animation: l37 1s infinite;
+}
+.loader:before {
+  -webkit-mask-image:
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
+}
+.loader:after {
+  -webkit-mask-image:linear-gradient(#000 0 0);
+  transform: scaleY(0.5);
+}
+
+@keyframes l37{
+  0%    {-webkit-mask-position:1ch  0,0 0}
+  12.5% {-webkit-mask-position:100% 0,0 0}
+  25%   {-webkit-mask-position:4ch  0,0 0}
+  37.5% {-webkit-mask-position:8ch  0,0 0}
+  50%   {-webkit-mask-position:2ch  0,0 0}
+  62.5% {-webkit-mask-position:100% 0,0 0}
+  75%   {-webkit-mask-position:0ch  0,0 0}
+  87.5% {-webkit-mask-position:6ch  0,0 0}
+  100%  {-webkit-mask-position:3ch  0,0 0}
+}
+
+
+
+
+
+
+
   </style>
   
   <!-- Include Chart.js -->
@@ -312,6 +361,10 @@
       const eventName = document.getElementById("eventDropdown").value;
       const matchNumber = document.getElementById("matchDropdown").value;
       
+      
+if(matchNumber !=="all"){
+
+
       // Build alliance arrays from fetchedRobots.
       let blueAlliance = [];
       let redAlliance = [];
@@ -348,6 +401,14 @@
         }
       };
       xhr.send();
+}else{
+
+  updatePredictionDisplay();
+}
+
+
+
+
     }
     
     /******************************************
@@ -750,6 +811,10 @@
   });
 }
 
+
+
+
+
     
     /******************************************
      * Event Listeners
@@ -776,7 +841,7 @@
         </div>
         <div class="grid-item">
           <label for="matchDropdown"><strong>Select a Match:</strong></label>
-          <select id="matchDropdown" onchange="fetchRobotCards();">
+          <select id="matchDropdown">
             <option value="">-- Select Match --</option>
             <option value="all">All Matches</option>
           </select>
@@ -803,7 +868,7 @@
   </div>
   
   <!-- Prediction Card -->
-<div id="predictionCard" class="card prediction-card">
+<div id="predictionCard" class="card prediction-card ">
   <div id="predictionHeader">
     <!-- updatePredictionDisplay() will update header info here -->
   </div>
@@ -831,10 +896,23 @@
         return;
       }
       // First, fetch robot cards. After a short delay, fetch prediction data.
+       showPredictionLoading(matchNumber);
       fetchRobotCards();
      
     });
+function showPredictionLoading(matchNumber) {
+  const predictionContainer = document.getElementById("predictionCard");
+  const predictionCharts = document.getElementById("predictionCharts");
+  if(matchNumber == 'all'){
+predictionContainer.style.display = 'none'
+  }else{
+  predictionContainer.style.display = 'block'
 
+  predictionCharts.innerHTML = '';
+  document.getElementById("predictionHeader").innerHTML = '';
+  predictionCharts.innerHTML = `<div class="loader"> Processing prediction...</div>`;
+}
+}
 
   </script>
 </body>
