@@ -43,7 +43,7 @@ try {
     // Step 2: Insert Unique Robots for Selected Event
     $stmt = $pdo->prepare("
         INSERT INTO temp_robot_categories (robot)
-        SELECT DISTINCT robot FROM scouting_submissions WHERE event_name = ?
+        SELECT DISTINCT robot FROM active_event WHERE event_name = ?
     ");
     $stmt->execute([$event_name]);
 

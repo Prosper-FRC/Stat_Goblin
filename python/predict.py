@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 
 def get_db_connection():
-    # Replace these with your actual DB credentials
+
     return mysql.connector.connect(
         host='localhost',
         user='root',
@@ -41,6 +41,20 @@ def load_historical_data(event_name):
     conn.close()
     data.columns = data.columns.str.strip()  # Clean column names
     return data
+
+    
+def get_match_robots(event_name, match_no):
+    conn = get_db_connection()
+    query = """
+    SELECT robot, alliance
+    FROM active_event
+    WHERE event_name = %s AND match_number = %s
+    """
+    df = pd.read_sql(query, conn, params=(event_name, match_no))
+    conn.close()
+    # Ensure the robot column is a stripped string
+    df["robot"] = df["robot"].astype(str).str.strip()
+    return df
 
 
 def compute_linear_slope_and_next(xvals, yvals):
@@ -205,10 +219,13 @@ def estimate_robot_performance(robot_id, global_avgs):
     }
 
 def balanced_robot_prediction(robot_id, robot_performance, best_rf, hist_weight, global_avgs):
+    robot_id = str(robot_id).strip()  # ensure it's a string
     if robot_id not in robot_performance["robot"].values:
+        print(f"Robot {robot_id} missing in aggregated data; using defaults.")
         row = estimate_robot_performance(robot_id, global_avgs)
     else:
         row = robot_performance[robot_performance["robot"] == robot_id].iloc[0].to_dict()
+    
     matches_played = row["matches"]
     historical_avg = row["avg_points_per_match"]
     if matches_played < 1:
@@ -275,23 +292,30 @@ def get_alliance_stats(alliance, robot_performance, global_avgs):
 @app.route('/predict', methods=['GET'])
 def predict():
     try:
-        # Retrieve query parameters (include event_name)
         event_name = request.args.get('event_name')
         if not event_name:
             return jsonify({"error": "event_name parameter is required"}), 400
 
         match_no = int(request.args.get('match_no'))
-        blue_alliance = [x.strip() for x in request.args.get('blue_alliance').split(',')]
-        red_alliance = [x.strip() for x in request.args.get('red_alliance').split(',')]
-
+        
+        # Get the robots for the match from active_event table:
+        match_robots = get_match_robots(event_name, match_no)
+        # Split them into blue and red alliances based on the 'alliance' column:
+        blue_alliance = match_robots[match_robots["alliance"].str.lower() == "blue"]["robot"].tolist()
+        red_alliance = match_robots[match_robots["alliance"].str.lower() == "red"]["robot"].tolist()
+        
+        # Optional: Log the alliances to debug:
+        print("Blue Alliance:", blue_alliance)
+        print("Red Alliance:", red_alliance)
+        
         hist_weight = float(request.args.get('hist_weight', 0.5))
         hist_weight = max(0.0, min(1.0, hist_weight))
         
-        # Load and aggregate historical data for the specified event
+        # Load aggregated scouting data from scouting_submissions
         data = load_historical_data(event_name)
         robot_perf = aggregate_data(data)
         
-        # Compute global averages for new robot defaults
+        # Compute global averages from the aggregated data
         global_avgs = {
             "avg_points_per_match": robot_perf["avg_points_per_match"].mean(),
             "success_rate": robot_perf["success_rate"].mean(),
@@ -302,18 +326,15 @@ def predict():
             "predicted_next_points": robot_perf["predicted_next_points"].mean()
         }
         
-        # Train model (or load a pre-trained model)
+        # Train your model using robot_perf data
         best_rf = train_model(robot_perf)
         
-        # Predict alliance scores
+        # Use your prediction functions (they will fall back to global averages for robots missing from scouting_submissions)
         blue_score, blue_contrib = predict_alliance_score(blue_alliance, robot_perf, best_rf, hist_weight, global_avgs)
         red_score, red_contrib = predict_alliance_score(red_alliance, robot_perf, best_rf, hist_weight, global_avgs)
-        
-        # Get detailed robot stats for each alliance
         blue_stats = get_alliance_stats(blue_alliance, robot_perf, global_avgs)
         red_stats = get_alliance_stats(red_alliance, robot_perf, global_avgs)
         
-        # Determine winner
         if blue_score > red_score:
             winner = "Blue Alliance"
         elif red_score > blue_score:
@@ -321,22 +342,22 @@ def predict():
         else:
             winner = "Tie"
         
-        # Prepare JSON response including event_name
         result = {
             "event_name": event_name,
             "match_no": match_no,
             "blue_score": round(blue_score, 2),
-            "blue_contributions": blue_contrib,  # if needed, you can also process these
-            "blue_stats": get_alliance_stats(blue_alliance, robot_perf, global_avgs),
+            "blue_contributions": blue_contrib,
+            "blue_stats": blue_stats,
             "red_score": round(red_score, 2),
             "red_contributions": red_contrib,
-            "red_stats": get_alliance_stats(red_alliance, robot_perf, global_avgs),
+            "red_stats": red_stats,
             "predicted_winner": winner
         }
         return jsonify(result)
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 
