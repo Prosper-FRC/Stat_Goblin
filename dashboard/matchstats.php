@@ -222,7 +222,7 @@
 }
 .loader:before,
 .loader:after {
-  content:"Loading...";
+  content:"Processing prediction...";
   grid-area: 1/1;
   -webkit-mask-size: 2ch 100%,100% 100%;
   -webkit-mask-repeat: no-repeat;
@@ -910,7 +910,7 @@ predictionContainer.style.display = 'none'
 
   predictionCharts.innerHTML = '';
   document.getElementById("predictionHeader").innerHTML = '';
-  predictionCharts.innerHTML = `<div class="loader"> Processing prediction...</div>`;
+  predictionCharts.innerHTML = `<div class="loader"> </div>`;
 }
 }
 
