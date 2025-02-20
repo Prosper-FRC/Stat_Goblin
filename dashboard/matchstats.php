@@ -223,17 +223,19 @@
 
 /* HTML: <div class="loader"></div> */
 
-/*
 
-.loader {
-color:#333;
+
+.loader2 {
+color:#fff;
   font-weight: bold;
   font-family: monospace;
   display: inline-grid;
-  font-size: 30px;
+  font-size: 1.5rem;
+  margin:auto;
+  text-align: center;
 }
-.loader:before,
-.loader:after {
+.loader2:before,
+.loader2:after {
   content:"Processing Random Forest Regression Prediction...";
   grid-area: 1/1;
   -webkit-mask-size: 2ch 100%,100% 100%;
@@ -242,12 +244,12 @@ color:#333;
           mask-composite:exclude;
   animation: l37 1s infinite;
 }
-.loader:before {
+.loader2:before {
   -webkit-mask-image:
     linear-gradient(#000 0 0),
     linear-gradient(#000 0 0);
 }
-.loader:after {
+.loader2:after {
   -webkit-mask-image:linear-gradient(#000 0 0);
   transform: scaleY(0.5);
 }
@@ -264,7 +266,7 @@ color:#333;
   100%  {-webkit-mask-position:3ch  0,0 0}
 }
 
-*/
+
 
 .loader {
   width: 85px;
