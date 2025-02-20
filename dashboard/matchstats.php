@@ -83,7 +83,7 @@
       background: #fff;
       color: #333;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+ 
       width: 100%;
       max-width: 800px;
       margin: 2rem auto;
@@ -125,7 +125,7 @@
       background: #fff;
       color: #333;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+ 
       width: 90%;
       max-width: 800px;
       margin: 1rem auto;
@@ -213,8 +213,20 @@
 
 
 
+
+
+
+
+
+
+
+
 /* HTML: <div class="loader"></div> */
+
+/*
+
 .loader {
+color:#333;
   font-weight: bold;
   font-family: monospace;
   display: inline-grid;
@@ -222,7 +234,7 @@
 }
 .loader:before,
 .loader:after {
-  content:"Processing prediction...";
+  content:"Processing Random Forest Regression Prediction...";
   grid-area: 1/1;
   -webkit-mask-size: 2ch 100%,100% 100%;
   -webkit-mask-repeat: no-repeat;
@@ -252,9 +264,39 @@
   100%  {-webkit-mask-position:3ch  0,0 0}
 }
 
+*/
+
+.loader {
+  width: 85px;
+  height: 50px;
+  --g1:conic-gradient(from  90deg at left   3px top   3px,#0000 90deg,#fff 0);
+  --g2:conic-gradient(from -90deg at bottom 3px right 3px,#0000 90deg,#fff 0);
+  background: var(--g1),var(--g1),var(--g1), var(--g2),var(--g2),var(--g2);
+  background-position: left,center,right;
+  background-repeat: no-repeat;
+  animation: l10 1s infinite alternate;
+}
+@keyframes l10 {
+  0%,
+  2%   {background-size:25px 50% ,25px 50% ,25px 50%}
+  20%  {background-size:25px 25% ,25px 50% ,25px 50%}
+  40%  {background-size:25px 100%,25px 25% ,25px 50%}
+  60%  {background-size:25px 50% ,25px 100%,25px 25%}
+  80%  {background-size:25px 50% ,25px 50% ,25px 100%}
+  98%,
+  100% {background-size:25px 50% ,25px 50% ,25px 50%}
+}
 
 
 
+
+.loader{
+margin:auto;
+}
+#predictionCard{
+
+border:none;
+  background-color: #222;}
 
 
 
@@ -482,7 +524,8 @@ if(matchNumber !=="all"){
                 <p>Cooperative Score: ${parseFloat(robot.cooperative_score || 0).toFixed(2)}</p>
               </div>
               <div class="robot-chart">
-                <canvas id="chart-${index}"></canvas>
+                <canvas id="chart_${robot.robot}"></canvas>
+
               </div>
             </div>
             <div class="scoring-breakdown">
@@ -542,50 +585,57 @@ if(matchNumber !=="all"){
       container.innerHTML = html;
       
       // Create individual charts for each robot (if desired)
-      fetchedRobots.forEach((robot, index) => {
-        const canvas = document.getElementById(`chart-${index}`);
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        const offense = Number(robot.offense_score) || 0;
-        const defense = Number(robot.defense_score) || 0;
-        const auton = Number(robot.auton_score) || 0;
-        const coop = Number(robot.cooperative_score) || 0;
-        const coopColor = coop >= 0 ? "rgba(0, 128, 0, 0.6)" : "rgba(243,53,53, 0.6)";
-        const coopBorderColor = coop >= 0 ? "rgba(0, 128, 0, 1)" : "rgba(243,53,53, 1)";
-        const data = {
-          labels: ["Offense", "Defense", "Auton", "Co-op"],
-          datasets: [{
-            label: "Performance",
-            data: [offense, defense, auton, coop],
-            backgroundColor: [
-              "rgba(20, 61, 96, 0.6)",
-              "rgba(39, 102, 123, 0.6)",
-              "rgba(160, 200, 120, 0.6)",
-              coopColor
-            ],
-            borderColor: [
-              "rgb(20, 61, 96)",
-              "rgb(39, 102, 123)",
-              "rgb(160, 200, 120)",
-              coopBorderColor
-            ],
-            borderWidth: 1
-          }]
-        };
-        new Chart(ctx, {
-          type: "bar",
-          data: data,
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: { beginAtZero: true },
-              y: { beginAtZero: true }
-            },
-            plugins: { legend: { display: false } }
-          }
-        });
-      });
+ // Create individual charts for each robot (using the robot's unique ID)
+fetchedRobots.forEach(robot => {
+  // Use the robot identifier to get the correct canvas element.
+  const canvas = document.getElementById("chart_" + robot.robot);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // Extract the performance values (ensuring numeric conversion)
+  const offense = Number(robot.offense_score) || 0;
+  const defense = Number(robot.defense_score) || 0;
+  const auton = Number(robot.auton_score) || 0;
+  const coop = Number(robot.cooperative_score) || 0;
+  const coopColor = coop >= 0 ? "rgba(0, 128, 0, 0.6)" : "rgba(243,53,53,0.6)";
+  const coopBorderColor = coop >= 0 ? "rgba(0, 128, 0, 1)" : "rgba(243,53,53,1)";
+
+  const data = {
+    labels: ["Offense", "Defense", "Auton", "Co-op"],
+    datasets: [{
+      label: "Performance",
+      data: [offense, defense, auton, coop],
+      backgroundColor: [
+        "rgba(20, 61, 96, 0.6)",
+        "rgba(39, 102, 123, 0.6)",
+        "rgba(160, 200, 120, 0.6)",
+        coopColor
+      ],
+      borderColor: [
+        "rgb(20, 61, 96)",
+        "rgb(39, 102, 123)",
+        "rgb(160, 200, 120)",
+        coopBorderColor
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  new Chart(ctx, {
+    type: "bar",
+    data: data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { beginAtZero: true },
+        y: { beginAtZero: true }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+});
+
     }
     
     // Update prediction display using aggregated data from predict.php.
@@ -674,7 +724,7 @@ if(matchNumber !=="all"){
   chartsHtml += `<div style="margin-bottom:1rem;"><h3>Red Alliance: Success Rate Slope</h3><canvas id="redSuccessChart" style="width:100%; height:300px;"></canvas></div>`;
   chartsHtml += `<div style="margin-bottom:1rem;"><h3>Red Alliance: Total Events Slope</h3><canvas id="redEventsChart" style="width:100%; height:300px;"></canvas></div>`;
   chartsHtml += `<div style="margin-bottom:1rem;"><h3>Red Alliance: Points Slope</h3><canvas id="redPointsChart" style="width:100%; height:300px;"></canvas></div>`;
-  
+  document.getElementById("predictionCard").style.backgroundColor = '#fff';
   // Update the charts container (assumed to have id "predictionCharts")
   document.getElementById("predictionCharts").innerHTML = chartsHtml;
   
@@ -907,10 +957,11 @@ function showPredictionLoading(matchNumber) {
 predictionContainer.style.display = 'none'
   }else{
   predictionContainer.style.display = 'block'
+  predictionContainer.style.backgroundColor = '#222'
 
   predictionCharts.innerHTML = '';
   document.getElementById("predictionHeader").innerHTML = '';
-  predictionCharts.innerHTML = `<div class="loader"> </div>`;
+  predictionCharts.innerHTML = `<div class="loader"> </div> <div class="loader2"> </div>`;
 }
 }
 
