@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
 <body>
   <div id="containerOuter">
     <div id="container">
-      <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
+      <img src="../images/owlupload.png" class="logo" alt="Logo">
     <h2>Upload Schedule CSV</h2>
     <div class="drop-zone" id="drop-zone">
         Drag and drop your CSV file here, or click to select.

@@ -216,7 +216,7 @@ if (isset($_POST['toggle_pause'])) {
 <body>
 <div class="containerOuter">
     <div class="container">
-      <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
+      <img src="../images/owladmin.png" class="logo" alt="Logo">
 <h1>Admin Console</h1>
 
 <!-- Feature 1: Manage Events -->
