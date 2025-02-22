@@ -302,6 +302,26 @@ border:none;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   </style>
   
   <!-- Include Chart.js -->
@@ -665,13 +685,14 @@ fetchedRobots.forEach(robot => {
   // Remove previous animation classes
   headerEl.classList.remove("blue-win", "red-win", "tie-win");
   // Apply the appropriate animation based on predicted winner
-  if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
-    headerEl.classList.add("blue-win");
-  } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
-    headerEl.classList.add("red-win");
-  } else {
-    headerEl.classList.add("tie-win");
-  }
+let predictedWinner = aggregatedData.predicted_winner || "";
+if (predictedWinner.toLowerCase().includes("blue")) {
+  headerEl.classList.add("blue-win");
+} else if (predictedWinner.toLowerCase().includes("red")) {
+  headerEl.classList.add("red-win");
+} else {
+  headerEl.classList.add("tie-win");
+}
   
   // Build tables for Blue and Red Alliance basic stats.
   let chartsHtml = "";
@@ -877,7 +898,7 @@ fetchedRobots.forEach(robot => {
 <body>
   <div class="containerOuter">
     <div class="container">
-      <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
+      <img src="../images/owlanalytics.png" class="logo" alt="Logo">
       <!-- Grid for Dropdowns -->
       <div class="grid-container">
         <div class="grid-item">

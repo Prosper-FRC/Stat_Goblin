@@ -80,18 +80,18 @@
 <body>
   <div class="containerOuter">
     <div class="container">
-      <img src="images/statgoblinlogo.webp" class="logo" alt="Logo">
+      <img src="images/theStatOwl.png" class="logo" alt="Logo">
       
       <!-- 2x2 Grid for Dropdowns -->
       <div class="grid-container">
         <div class="grid-item">
-          <label for="eventDropdown"><strong>Scouter App:</strong></label>
+          <label for="eventDropdown"><strong>The Scout Owl:</strong></label>
          <a href ="scouter.php"><img class="icon" src="icons/scouter.png" alt="scouter app"></a>
         </div>
 
 
         <div class="grid-item">
-          <label for="eventDropdown"><strong>Admin Console:</strong></label>
+          <label for="eventDropdown"><strong>Owl Admin Console:</strong></label>
           
 
  <a href ="admin-console/"><img class="icon" src="icons/admin.png" alt="Admin Console"></a>
@@ -100,7 +100,7 @@
         </div>
 
                 <div class="grid-item">
-          <label for="eventDropdown"><strong>Analytics:</strong></label>
+          <label for="eventDropdown"><strong>Owl Analytics:</strong></label>
          
 
           <a href ="dashboard/matchstats.php"><img class="icon" src="icons/analytics.png" alt="scouter app"></a>

@@ -341,7 +341,7 @@
             <div id="top">
                 <div id="logoAndScoreboard">
                     <div id="logoOuter">
-                        <img src="../images/statgoblinlogo.webp" class="logo" alt="Logo">
+                        <img src="../images/thescoutowl.png" class="logo" alt="Logo">
                         <h1 class="griffy">Reefscape Edition</h1>
                     </div>
                     <div id="scoreboardOuter">

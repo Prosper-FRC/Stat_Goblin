@@ -159,7 +159,7 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
 <body>
       <div class="containerOuter">
     <div class="container">
-    <img src="images/statgoblinlogo.webp" class="logo"> 
+    <img src="images/thescoutowl.png" class="logo"> 
 
     <form id="scoutingForm">
         <label for="eventDropdown">Event:</label> 
