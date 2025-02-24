@@ -316,12 +316,12 @@ border:none;
 
 
 
-#newChart{height:18rem;}
+#newChart{height:18rem; }
 
 
 #newChartContainer {
   min-height: 400px;
-  max-width:780px;
+ width:90% !important;
   display:none;
 }
 
