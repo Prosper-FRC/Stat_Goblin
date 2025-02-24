@@ -321,6 +321,7 @@ border:none;
 
 #newChartContainer {
   min-height: 400px;
+  max-width:780px;
   display:none;
 }
 
