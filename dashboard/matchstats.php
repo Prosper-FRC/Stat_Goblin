@@ -1153,7 +1153,7 @@ function fetchMatchCharts() {
       };
       
       // Start cycling metrics every 8 seconds.
-      setInterval(cycleMetrics, 8000);
+      setInterval(cycleMetrics, 800000);
     })
     .catch(function(error) {
       console.error("Error fetching match charts:", error);
