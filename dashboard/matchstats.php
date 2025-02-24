@@ -1123,7 +1123,7 @@ function fetchMatchCharts() {
               },
               ticks: {
                 stepSize: 1,
-                beginAtZero: true
+                beginAtZero: false
               }
             }],
             yAxes: [{
