@@ -4,7 +4,19 @@ $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Fetch unique events from scouting_submissions
-$event_query = $pdo->query("SELECT DISTINCT event_name FROM scouting_submissions ORDER BY event_name ASC");
+$event_query = $pdo->query("SELECT ss.event_name,
+       ae.match_number,
+       ae.alliance,
+       ae.robot
+FROM (
+  SELECT event_name, match_no, time_sec
+  FROM scouting_submissions
+  ORDER BY id DESC
+  LIMIT 1
+) ss
+LEFT JOIN active_event ae
+  ON ss.event_name COLLATE utf8mb4_unicode_ci = ae.event_name COLLATE utf8mb4_unicode_ci
+  AND ss.match_no + 1 = ae.match_number order by ae.alliance asc");
 $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -201,6 +213,93 @@ min-height:4rem;
       background: #f0f0f0;
       color: #333;
     }
+    .vsImg{width:4rem;}
+
+#predictionCard{font-size: .75rem; display:none; 
+
+padding-left: 12px
+}
+
+
+.loader {
+  width: 85px;
+  height: 50px;
+  --g1:conic-gradient(from  90deg at left   3px top   3px,#0000 90deg,#fff 0);
+  --g2:conic-gradient(from -90deg at bottom 3px right 3px,#0000 90deg,#fff 0);
+  background: var(--g1),var(--g1),var(--g1), var(--g2),var(--g2),var(--g2);
+  background-position: left,center,right;
+  background-repeat: no-repeat;
+  animation: l10 1s infinite alternate;
+}
+@keyframes l10 {
+  0%,
+  2%   {background-size:25px 50% ,25px 50% ,25px 50%}
+  20%  {background-size:25px 25% ,25px 50% ,25px 50%}
+  40%  {background-size:25px 100%,25px 25% ,25px 50%}
+  60%  {background-size:25px 50% ,25px 100%,25px 25%}
+  80%  {background-size:25px 50% ,25px 50% ,25px 100%}
+  98%,
+  100% {background-size:25px 50% ,25px 50% ,25px 50%}
+}
+
+
+
+
+.loader{
+margin:auto;
+}
+#predictionCard{
+
+border:none;
+  background-color: #222;}
+
+
+
+.loader2 {
+color:#fff;
+  font-weight: bold;
+  font-family: monospace;
+  display: inline-grid;
+  font-size: 1.5rem;
+  margin:auto;
+  text-align: center;
+}
+.loader2:before,
+.loader2:after {
+  content:"Processing Random Forest Regression Prediction...";
+  grid-area: 1/1;
+  -webkit-mask-size: 2ch 100%,100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+          mask-composite:exclude;
+  animation: l37 1s infinite;
+}
+.loader2:before {
+  -webkit-mask-image:
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
+}
+.loader2:after {
+  -webkit-mask-image:linear-gradient(#000 0 0);
+  transform: scaleY(0.5);
+}
+
+@keyframes l37{
+  0%    {-webkit-mask-position:1ch  0,0 0}
+  12.5% {-webkit-mask-position:100% 0,0 0}
+  25%   {-webkit-mask-position:4ch  0,0 0}
+  37.5% {-webkit-mask-position:8ch  0,0 0}
+  50%   {-webkit-mask-position:2ch  0,0 0}
+  62.5% {-webkit-mask-position:100% 0,0 0}
+  75%   {-webkit-mask-position:0ch  0,0 0}
+  87.5% {-webkit-mask-position:6ch  0,0 0}
+  100%  {-webkit-mask-position:3ch  0,0 0}
+}
+
+
+
+
+
   </style>
 </head>
 <body>
@@ -212,13 +311,70 @@ min-height:4rem;
         <div>
           <label for="sortOption"><strong>Sort by:</strong></label><br>
           <select id="sortOption" onchange="updateRobotCards()">
-  <option value="alliance" selected>Alliance</option>
-  <option value="offense_score">Offense Score</option>
-  <option value="defense_score">Defense Score</option>
-  <option value="cooperative_score">Cooperative Score</option>
-  <option value="robot">Robot</option> <!-- New sort option -->
-</select>
+              <option value="alliance" selected>Alliance</option>
+              <option value="offense_score">Offense Score</option>
+              <option value="defense_score">Defense Score</option>
+              <option value="cooperative_score">Cooperative Score</option>
+              <option value="robot">Robot</option> <!-- New sort option -->
+          </select>
         </div>
+
+
+
+
+       <div>
+  <label for="red1"><strong>Red 1:</strong></label><br>
+  <select id="red1">
+    <option>
+    </option>
+  </select>
+</div>
+<div>
+  <label for="red2"><strong>Red 2:</strong></label><br>
+  <select id="red2">
+    <option>red 2
+    </option>
+  </select>
+</div>
+<div>
+  <label for="blue3"><strong>Red 3:</strong></label><br>
+  <select id="red3">
+    <option>red 3
+    </option>
+  </select>
+</div>
+<div>
+  <img class="vsImg" src="../images/vs.png" alt="vs">
+</div>
+<div>
+  <label for="blue1"><strong>Blue 1:</strong></label><br>
+  <select id="blue1">
+  <option>blue 1
+    </option>
+  </select>
+</div>
+<div>
+  <label for="blue2"><strong>Blue 2:</strong></label><br>
+  <select id="blue2">
+    <option>blue 2
+    </option>
+  </select>
+</div>
+<div>
+  <label for="blue3"><strong>Blue 3:</strong></label><br>
+  <select id="blue3">
+    <option>blue 3
+    </option>
+  </select>
+</div>
+
+
+
+
+
+
+
+
       </div>
     </div>
     <!-- Robot Cards Container -->
@@ -266,8 +422,10 @@ min-height:4rem;
     
     // Fetch robot card data
     function fetchRobotCards() {
+const eventData = <?php echo json_encode($events); ?>;
+  const currentEvent = eventData[0];
+  const eventName = currentEvent.event_name;
 
-      const eventName ='battle of Cybertron';
       const matchNumber = 'all';
 
       const container = document.getElementById("robotContainer");
@@ -290,7 +448,7 @@ min-height:4rem;
             fetchedRobots = robotsArray;
             filterRobots = [];
             updateRobotCards();
-      
+      populateAllRobotDropdowns();
           } catch (error) {
             console.error("JSON Parsing Error:", error);
             container.innerHTML = `<p style="color:red;">Error processing robot data.</p>`;
@@ -298,6 +456,7 @@ min-height:4rem;
         }
       };
       xhr.send();
+
     }
     
 
@@ -337,10 +496,10 @@ function updateRobotCards() {
   <img class="logo" src="../images/owlanalytics.png" alt="Logo">
 </div>
 <div id="predictionCard" class="card robot-card prediction-card">
-  <div id="predictionHeader">
+
     <h3>Match Prediction</h3>
     <p id="predictionResult">Waiting for prediction...</p>
-  </div>
+
 </div>
  `;
 
@@ -559,28 +718,283 @@ function cycleRobotCardViews() {
     }
     
     // Update prediction display in the prediction card.
-    function updatePredictionDisplay() {
-      let headerHtml = `<strong>Event:</strong> ${aggregatedData.event_name}<br>`;
-      headerHtml += `<strong>Match No:</strong> ${aggregatedData.match_no}<br>`;
-      headerHtml += `<strong>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
-      headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
-      headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br>`;
-      // Update header content.
-      document.getElementById("predictionResult").innerHTML = headerHtml;
-      
-      // Change prediction card background color based on winner.
-      const card = document.getElementById("predictionCard");
-      if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
-        card.style.backgroundColor = "#cce5ff"; // light blue
-      } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
-        card.style.backgroundColor = "#f8d7da"; // light red
-      } else {
-        card.style.backgroundColor = "#e2e3e5"; // light gray for tie/other
-      }
+//    function updatePredictionDisplay() {
+//      let headerHtml = `<strong>Event:</strong> ${aggregatedData.event_name}<br>`;
+//      headerHtml += `<strong>Match No:</strong> ${aggregatedData.match_no}<br>`;
+//      headerHtml += `<strong>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
+//      headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
+//      headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br>`;
+//      // Update header content.
+//      document.getElementById("predictionResult").innerHTML = headerHtml;
+//      
+//      // Change prediction card background color based on winner.
+//      const card = document.getElementById("predictionCard");
+//      if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
+//        card.style.backgroundColor = "#cce5ff"; // light blue
+//      } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
+//        card.style.backgroundColor = "#f8d7da"; // light red
+//      } else {
+//        card.style.backgroundColor = "#e2e3e5"; // light gray for tie/other
+//      }
+//    }
+function populateAllRobotDropdowns() {
+  // Get a unique list of robot identifiers from your fetched data.
+  const uniqueRobots = [...new Set(fetchedRobots.map(r => r.robot))];
+  // Array of your dropdown IDs.
+  const dropdownIds = ["red1", "red2", "red3", "blue1", "blue2", "blue3"];
+  
+  dropdownIds.forEach(id => {
+    const dropdown = document.getElementById(id);
+    if (dropdown) {
+      // Clear existing options and add a default option.
+      dropdown.innerHTML = "<option value=''>-- Select Robot --</option>";
+      uniqueRobots.forEach(robot => {
+        let option = document.createElement("option");
+        option.value = robot;
+        option.textContent = robot;
+        dropdown.appendChild(option);
+      });
     }
+  });
+}
+ 
+
+ function getSelectedAllianceRobots() {
+  // Define the dropdown IDs for each alliance.
+  const blueIds = ["blue1", "blue2", "blue3"];
+  const redIds = ["red1", "red2", "red3"];
+  
+  // Collect selected values.
+  let blueAlliance = blueIds.map(id => {
+    const dd = document.getElementById(id);
+    return dd ? dd.value : "";
+  }).filter(val => val !== ""); // Filter out empty selections
+  
+  let redAlliance = redIds.map(id => {
+    const dd = document.getElementById(id);
+    return dd ? dd.value : "";
+  }).filter(val => val !== "");
+  
+  return { blueAlliance, redAlliance };
+}
+
+
+
+
+function checkAllDropdownsFilled() {
+  const ids = ["blue1", "blue2", "blue3", "red1", "red2", "red3"];
+  // Check that every dropdown has a non-empty value.
+  const allFilled = ids.every(id => {
+    const el = document.getElementById(id);
+    return el && el.value.trim() !== "";
+  });
+  if (allFilled) {
+    sendPredictionRequest();
+  }
+}
+
+
+["blue1", "blue2", "blue3", "red1", "red2", "red3"].forEach(id => {
+  const dropdown = document.getElementById(id);
+  if (dropdown) {
+    dropdown.addEventListener("change", checkAllDropdownsFilled);
+  }
+});
+
+
+function sendPredictionRequest() {
+  showPredictionLoading();
+  const eventData = <?php echo json_encode($events); ?>;
+  const currentEvent = eventData[0];
+  const eventName = currentEvent.event_name;
+  const matchNumber = 1313; // fixed value
+  const hist_weight = 0.5;
+
+  // Get selections from the dropdowns:
+  const blueAlliance = ["blue1", "blue2", "blue3"].map(id => document.getElementById(id).value);
+  const redAlliance = ["red1", "red2", "red3"].map(id => document.getElementById(id).value);
+
+  // Build the URL:
+  const apiUrl = `predict.php?event_name=${encodeURIComponent(eventName)}&match_no=${encodeURIComponent(matchNumber)}&blue_alliance=${encodeURIComponent(blueAlliance.join(','))}&red_alliance=${encodeURIComponent(redAlliance.join(','))}&hist_weight=${encodeURIComponent(hist_weight)}`;
+
+fetch(apiUrl)
+  .then(response => response.json())
+  .then(data => {
+    console.log("Prediction Data:", data);
+    // Assign the returned data to aggregatedData (or use data directly)
+    aggregatedData = data;  // <–– add this line
+  // Combine blue_stats and red_stats if needed (or use them separately)
+  let blueStats = [];
+  let redStats = [];
+
+  let blueContributions = [];
+  let redContributions = [];
+
+  if (aggregatedData.blue_stats && Array.isArray(aggregatedData.blue_stats)) {
+    blueStats = aggregatedData.blue_stats;
+  }
+  if (aggregatedData.red_stats && Array.isArray(aggregatedData.red_stats)) {
+    redStats = aggregatedData.red_stats;
+  }
+
+  if (aggregatedData.blue_contributions && Array.isArray(aggregatedData.blue_contributions)) {
+    blueContributions = aggregatedData.blue_contributions;
+  }
+  if (aggregatedData.red_contributions && Array.isArray(aggregatedData.red_contributions)) {
+    redContributions = aggregatedData.red_contributions;
+  }
+
+
+  
+    // Now use aggregatedData to build your header HTML:
+    let headerHtml = `<strong><p>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
+    headerHtml +='<table><th>Robot</th><th>Points</th>';
+          blueContributions.forEach(stat => {
+    headerHtml += `
+                     <tr><td>${stat.robot}</td><td> ${Number(stat.predicted_ppm).toFixed(2)}</td></tr>
+                 `;
+  });
+          headerHtml+='  </table>'
+;    headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
+
+headerHtml +='<table><th>Robot</th><th>Points</th>';
+          redContributions.forEach(stat => {
+    headerHtml += `
+                     <tr><td>${stat.robot}</td><td> ${Number(stat.predicted_ppm).toFixed(2)}</td></tr>
+                 `;
+  });
+          headerHtml+='  </table>'
+; 
+
+    headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br><br>`;
+    
+
+ 
+
+
+
+
+    const headerEl = document.getElementById("predictionCard");
+    headerEl.innerHTML = headerHtml;
+
+
+      if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
+        headerEl.style.backgroundColor = 'rgba(33,91,159,1)';
+        headerEl.style.color = '#fff';
+      } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
+        headerEl.style.backgroundColor = 'rgba(96,20,55,1)';
+        headerEl.style.color = '#fff';
+      } else {
+        headerEl.style.backgroundColor = "#e2e3e5"; // light gray for tie/other
+        headerEl.style.color = '#000';
+      }
+
+
+  })
+  .catch(error => {
+    console.error("Prediction fetch error:", error);
+  });
+
+
+
+      
+
+
+}
+
+
+
 
 
     fetchRobotCards();
+
+
+
+
+    function selectRobots() {
+
+const eventData = <?php echo json_encode($events); ?>;
+  if (!eventData || eventData.length === 0) {
+    console.error("No event data available");
+    return;
+  }
+  
+
+  const robots = eventData.map(row => row.robot);
+  console.log("Robots:", robots);
+  
+ document.getElementById("red1").value = robots[1];
+document.getElementById("red1").dispatchEvent(new Event('change'));
+
+
+
+const red1 = document.getElementById("red1");
+const red2 = document.getElementById("red2");
+const red3 = document.getElementById("red3");
+const blue1 = document.getElementById("blue1");
+const blue2 = document.getElementById("blue2");
+const blue3 = document.getElementById("blue3");
+
+
+
+
+
+
+
+
+setTimeout(() => {
+red1.value = robots[0];
+red2.value = robots[1];
+red3.value = robots[2];
+blue1.value = robots[3];
+blue2.value = robots[4];
+blue3.value = robots[5];
+  
+
+red1.dispatchEvent(new Event('change'));
+red2.dispatchEvent(new Event('change'));
+red3.dispatchEvent(new Event('change'));
+blue1.dispatchEvent(new Event('change'));
+blue2.dispatchEvent(new Event('change'));
+blue3.dispatchEvent(new Event('change'));
+
+
+
+
+}, 1000); // adjust the delay as needed
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+    selectRobots();
+
+
+
+function showPredictionLoading() {
+  const predictionContainer = document.getElementById("predictionCard");
+
+  predictionContainer.style.display = 'block'
+  predictionContainer.style.backgroundColor = '#222'
+
+  predictionContainer.innerHTML = '';
+  
+  predictionContainer.innerHTML = `<div class="loader"> </div> <div class="loader2"> </div><div class="loader"> </div> `;
+}
+
+
+
+
+
   </script>
 </body>
 </html>

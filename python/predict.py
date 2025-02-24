@@ -45,16 +45,47 @@ def load_historical_data(event_name):
     
 def get_match_robots(event_name, match_no):
     conn = get_db_connection()
-    query = """
-    SELECT robot, alliance
-    FROM active_event
-    WHERE event_name = %s AND match_number = %s
-    """
-    df = pd.read_sql(query, conn, params=(event_name, match_no))
+    if match_no == 1313:
+
+        blue_alliance_param = request.args.get('blue_alliance')
+        if not blue_alliance_param:
+            return jsonify({"error": "blue_alliance parameter is required"}), 400
+        blue_alliance = blue_alliance_param.split(',')
+        
+        red_alliance_param = request.args.get('red_alliance')
+        if not red_alliance_param:
+            return jsonify({"error": "red_alliance parameter is required"}), 400
+        red_alliance = red_alliance_param.split(',')
+        # When match_no is "all", do not filter by match_number.
+        query = """
+            SELECT %s AS robot, 'Blue' AS alliance
+            UNION ALL
+            SELECT %s AS robot, 'Blue' AS alliance
+            UNION ALL
+            SELECT %s AS robot, 'Blue' AS alliance
+            UNION ALL
+            SELECT %s AS robot, 'Red' AS alliance
+            UNION ALL
+            SELECT %s AS robot, 'Red' AS alliance
+            UNION ALL
+            SELECT %s AS robot, 'Red' AS alliance
+        """
+        params = (blue_alliance[0], blue_alliance[1], blue_alliance[2],
+                  red_alliance[0], red_alliance[1], red_alliance[2])
+  
+    else:
+        query = """
+            SELECT robot, alliance
+            FROM active_event
+            WHERE event_name = %s AND match_number = %s
+        """
+        params = (event_name, match_no)
+    df = pd.read_sql(query, conn, params=params)
     conn.close()
     # Ensure the robot column is a stripped string
     df["robot"] = df["robot"].astype(str).str.strip()
     return df
+
 
 
 def compute_linear_slope_and_next(xvals, yvals):

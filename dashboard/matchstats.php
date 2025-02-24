@@ -141,7 +141,7 @@
       font-family: sans-serif;
      
       box-shadow: 0 0 20px rgba(0,0,0,0.15);
-      width: 80%;
+      width: 100%;
     }
     .predictTable thead tr {
       background-color: #9A7E6F;
@@ -316,10 +316,13 @@ border:none;
 
 
 
+#newChart{height:18rem;}
 
 
-
-
+#newChartContainer {
+  min-height: 400px;
+  display:none;
+}
 
 
   </style>
@@ -406,6 +409,7 @@ border:none;
         updateRobotCards();
         populateRobotToggleDropdown();
         // Now that robot data is fully received, call fetchPrediction()
+        fetchMatchCharts();
         fetchPrediction();
       } catch (error) {
         console.error("JSON Parsing Error:", error);
@@ -939,7 +943,10 @@ if (predictedWinner.toLowerCase().includes("blue")) {
       <input type="text" id="robotFilterList" readonly placeholder="Filter list" />
     </div>
   </div>
-  
+<div id="newChartContainer" class="card">
+  <canvas id="newChart" style="width:100%; height:400px;"></canvas>
+</div>
+
   <!-- Prediction Card -->
 <div id="predictionCard" class="card prediction-card ">
   <div id="predictionHeader">
@@ -987,6 +994,220 @@ predictionContainer.style.display = 'none'
   predictionCharts.innerHTML = `<div class="loader"> </div> <div class="loader2"> </div>`;
 }
 }
+
+
+
+
+// Global variables for the chart and cycling
+var matchChart; 
+var currentMetricIndex = 0;
+var metrics = ['offense_scores', 'points', 'success_rate', 'defense_score'];
+var groupedData = {}; // Will hold data grouped by robot
+
+// Global variables (ensure these are declared at the top of your script)
+var groupedData = {}; // will be filled by fetchMatchCharts
+var metrics = ['offense_scores', 'points', 'success_rate', 'defense_score'];
+var currentMetricIndex = 0;
+var matchChart = null;
+
+function fetchMatchCharts() {
+  // Build the robot list from fetchedRobots (each object must have a "robot" property)
+  var robotList = fetchedRobots.map(function(r) { return r.robot; }).join(',');
+  var apiUrl = "matchcharts.php?robotList=" + encodeURIComponent(robotList);
+  console.log("Match Charts API URL:", apiUrl);
+
+  fetch(apiUrl)
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      // Group rows by robot and convert numeric fields.
+      groupedData = {};
+      data.forEach(function(row) {
+        var matchRank = Number(row.match_rank);
+        var offense = Number(row.offense_scores);
+        var pts = Number(row.points);
+        var success = Number(row.success_rate);
+        var defense = Number(row.defense_score);
+        if (isNaN(matchRank) || isNaN(offense)) return;
+        var robot = row.robot;
+        if (!groupedData[robot]) {
+          groupedData[robot] = [];
+        }
+        groupedData[robot].push({
+          x: matchRank,
+          offense_scores: offense,
+          points: pts,
+          success_rate: success,
+          defense_score: defense
+        });
+        console.log("Data row:", row, "X:", matchRank, "Offense:", offense);
+      });
+      
+      // Sort each robot's data by match_rank.
+      for (var robot in groupedData) {
+        groupedData[robot].sort(function(a, b) { return a.x - b.x; });
+      }
+      
+      // Build datasets using the current metric.
+      var currentMetric = metrics[currentMetricIndex];
+      var datasets = [];
+      var colors = [
+        "rgba(20,96,61,.6)",
+        "rgba(20,55,96,.6)",
+        "rgba(96,20,55,.6)",
+        "rgba(96,61,20,.6)",
+        "rgba(96,23,20,.6)",
+        "rgba(33,91,159, .6)"
+      ];
+      var colorIndex = 0;
+      for (var robot in groupedData) {
+        if (Array.isArray(groupedData[robot]) && groupedData[robot].length > 0) {
+          var datasetData = groupedData[robot].map(function(pt) {
+            return { x: pt.x, y: pt[currentMetric] };
+          });
+          datasets.push({
+            label: robot,
+            data: datasetData,
+            backgroundColor: colors[colorIndex % colors.length],
+            borderColor: colors[colorIndex % colors.length],
+            showLine: true,   // Connect points
+            fill: false,
+            tension: 0.1
+          });
+          colorIndex++;
+        }
+      }
+      
+      if (datasets.length === 0) {
+        console.error("No valid datasets to render.");
+        return;
+      }
+      
+      // Determine x-axis labels (maximum match rank).
+      var maxRank = 0;
+      for (var robot in groupedData) {
+        groupedData[robot].forEach(function(pt) {
+          if (pt.x > maxRank) maxRank = pt.x;
+        });
+      }
+      var labels = [];
+      for (var i = 1; i <= maxRank; i++) {
+        labels.push(i.toString());
+      }
+      
+      // Get the canvas element.
+      var canvas = document.getElementById("newChart");
+      if (!canvas || typeof canvas.getContext !== 'function') {
+        console.error("Canvas element with id 'newChart' is missing or invalid.");
+        return;
+      }
+      var ctx = canvas.getContext("2d");
+      document.getElementById("newChartContainer").style.display = 'block';
+      
+      // Create the scatter chart using Chart.js v2 syntax.
+      matchChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          labels: labels, // not really used for scatter charts but required
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            xAxes: [{
+              type: 'linear',
+              position: 'bottom',
+              scaleLabel: {
+                display: true,
+                labelString: 'Match Rank'
+              },
+              ticks: {
+                stepSize: 1,
+                beginAtZero: true
+              }
+            }],
+            yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: getYAxisTitle(currentMetric)
+              },
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          },
+          title: {
+            display: true,
+            text: 'Metrics by Match'//getChartTitle(currentMetric)
+          },
+          legend: {
+            position: 'bottom'
+          }
+        }
+      });
+      
+      // Add a click event listener to the canvas to cycle metrics.
+      canvas.onclick = function() {
+        cycleMetrics();
+      };
+      
+      // Start cycling metrics every 8 seconds.
+      setInterval(cycleMetrics, 8000);
+    })
+    .catch(function(error) {
+      console.error("Error fetching match charts:", error);
+    });
+}
+
+function getYAxisTitle(metric) {
+  switch(metric) {
+    case 'offense_scores': return 'Offense Score';
+    case 'points': return 'Total Points';
+    case 'success_rate': return 'Success Rate';
+    case 'defense_score': return 'Defense Score';
+    default: return metric;
+  }
+}
+
+function getChartTitle(metric) {
+  switch(metric) {
+    case 'offense_scores': return 'Offense Scoring by Match';
+    case 'points': return 'Total Points by Match';
+    case 'success_rate': return 'Success Rate by Match';
+    case 'defense_score': return 'Defense Scoring by Match';
+    default: return metric;
+  }
+}
+
+function cycleMetrics() {
+  if (!matchChart) return;
+  // Cycle to the next metric.
+  currentMetricIndex = (currentMetricIndex + 1) % metrics.length;
+  var currentMetric = metrics[currentMetricIndex];
+  
+  // Update each dataset's data using the new metric.
+  matchChart.data.datasets.forEach(function(dataset) {
+    var robotLabel = dataset.label;
+    if (groupedData[robotLabel]) {
+      dataset.data = groupedData[robotLabel].map(function(pt) {
+        return { x: pt.x, y: pt[currentMetric] };
+      });
+    }
+  });
+  
+  // Update the y-axis label and chart title.
+  matchChart.options.scales.yAxes[0].scaleLabel.labelString = getYAxisTitle(currentMetric);
+  matchChart.options.title.text = getChartTitle(currentMetric);
+  
+  // Update the chart.
+  matchChart.update();
+  console.log("Cycled to metric:", currentMetric);
+}
+
+
+
+
+
 
   </script>
 </body>
