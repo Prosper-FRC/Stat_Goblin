@@ -250,9 +250,9 @@ try {
                AND ae.match_number = ?
             WHERE rc.robot IN (
                 SELECT DISTINCT robot 
-                FROM scouting_submissions 
+                FROM active_event 
                 WHERE event_name = ? 
-                  AND match_no = ?
+                  AND match_number = ?
             )
             ORDER BY rc.robot ASC
         ");

@@ -961,7 +961,7 @@ blue3.dispatchEvent(new Event('change'));
 
 
 
-}, 1000); // adjust the delay as needed
+}, 2000); // adjust the delay as needed
 
 
 
