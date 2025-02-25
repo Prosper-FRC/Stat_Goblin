@@ -69,8 +69,9 @@
             /* Headings */
             h1 {
             text-align: left;
-            font-size: 2.2rem;
+            font-size: .75rem;
             margin-left: 12px;
+            margin-top: -24px;
             color:#fff;
             }
             h2, h3, h4 {
@@ -123,7 +124,7 @@
             width: 50%; /* Equal width for logo and scoreboard */
 
             }
-            .logo { width: 60%; margin-left:10%;}
+            .logo { width: 100%; }
             /* Scoreboard */
             #scoreboard {
             width: 94%;
@@ -189,7 +190,7 @@
             position: relative;
             }
             .button {
-          font-size: 2.3rem;
+          font-size: 1.5rem;
             text-align: center;
             background-color: #222;
             color: #fff;
@@ -307,14 +308,14 @@
             .button .icon {
             top: 5px;           /* Adjust top offset as needed */
             right: 5px;         /* Adjust right offset as needed */
-            width: 2.5rem;        /* Set a width for the icon */
+            width: 2rem;        /* Set a width for the icon */
             height: auto;       /* Maintain aspect ratio */
             pointer-events: none; /* Ensures clicks go through to the button */
             }
 
             .button .iconSmall {
 
-            width: 2.3rem;        /* Set a width for the icon */
+            width: 2rem;        /* Set a width for the icon */
             height: auto;       /* Maintain aspect ratio */
             pointer-events: none; /* Ensures clicks go through to the button */
             }
