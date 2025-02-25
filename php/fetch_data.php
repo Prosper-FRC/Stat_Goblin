@@ -36,7 +36,7 @@ if (isset($_POST['action'])) {
                 $allianceName = "Red - " . $runningNumber;
             }
 
-            echo '<option value="' . htmlspecialchars($row['robot']) . '">' . $allianceName . " " . htmlspecialchars($row['robot']) . '</option>';
+            echo '<option value="' . htmlspecialchars($row['robot']) . '">(' . $allianceName . ") - " . htmlspecialchars($row['robot']) . '</option>';
         }
     } elseif ($action === 'fetchAlliance' && isset($_POST['event'], $_POST['match_number'], $_POST['robot'])) {
         $event = $_POST['event'];
