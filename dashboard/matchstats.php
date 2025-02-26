@@ -15,20 +15,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FRC Match Viewer with Robot Filter</title>
   <style>
-    /* Font Faces */
-    @font-face {
-      font-family: 'Roboto';
-      src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
-    }
-    @font-face {
-      font-family: 'Griffy';
-      src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
-    }
-    @font-face {
-      font-family: 'Comfortaa';
-      src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
-    }
-    
+    /* --- Font Faces --- */
+  @font-face {
+            font-family: 'Roboto';
+            src: url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Comfortaa';
+            src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
     /* Global Styles */
     body, html {
       font-family: 'Comfortaa', sans-serif;

@@ -36,8 +36,8 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
 
  @font-face {
             font-family: 'Comfortaa';
-            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }

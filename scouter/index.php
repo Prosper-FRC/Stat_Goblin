@@ -31,27 +31,27 @@
         <title>FRC Scouting App</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Load jQuery & Chart.js -->
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
+    
         <style>
             @font-face {
             font-family: 'Roboto';
-            src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            src: url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Griffy';
-            src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            src: url('/Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Comfortaa';
-            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }

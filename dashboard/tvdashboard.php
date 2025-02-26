@@ -1,78 +1,117 @@
 <?php
+// Include the database connection settings and functions
 require_once '../php/database_connection.php';
+
+// Create a new PDO connection using the variables defined in the included file.
+// The PDO object is used for interacting with the database.
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+
+// Set the PDO error mode to Exception so that any errors will throw exceptions
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// Fetch unique events from scouting_submissions
-$event_query = $pdo->query("SELECT ss.event_name,
-       ae.match_number,
-       ae.alliance,
-       ae.robot
-FROM (
-  SELECT event_name, match_no, time_sec
-  FROM scouting_submissions
-  ORDER BY id DESC
-  LIMIT 1
-) ss
-LEFT JOIN active_event ae
-  ON ss.event_name COLLATE utf8mb4_unicode_ci = ae.event_name COLLATE utf8mb4_unicode_ci
-  AND ss.match_no + 1 = ae.match_number order by ae.alliance asc");
+/*
+  Fetch a set of event data from the database. The query does the following:
+  - Selects the latest record from scouting_submissions (using ORDER BY id DESC LIMIT 1)
+  - Joins that record with the active_event table on a condition that:
+      * Matches event names (forcing a specific collation if needed)
+      * And where the match number in active_event equals scouting_submissions.match_no + 1
+  - Orders the results by the alliance in ascending order
+
+  Note: This query assumes that the latest submission (by ID) in scouting_submissions 
+        is the one of interest, and then the query uses that event name and match number
+        information to join with active_event.
+*/
+$event_query = $pdo->query("
+    SELECT 
+      ss.event_name,
+      ae.match_number,
+      ae.alliance,
+      ae.robot
+    FROM (
+      SELECT event_name, match_no, time_sec
+      FROM scouting_submissions
+      ORDER BY id DESC
+      LIMIT 1
+    ) ss
+    LEFT JOIN active_event ae
+      ON ss.event_name COLLATE utf8mb4_unicode_ci = ae.event_name COLLATE utf8mb4_unicode_ci
+      AND ss.match_no + 1 = ae.match_number
+    ORDER BY ae.alliance ASC
+");
+
+// Fetch all rows as an associative array and store in $events
 $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Meta tags for proper character encoding and responsive design -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FRC Match Dashboard</title>
   <style>
     /* --- Font Faces --- */
+    /* Define custom fonts using @font-face for use in the application */
     @font-face {
       font-family: 'Roboto';
-      src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+      src: url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+           url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+      font-weight: normal;
+      font-style: normal;
     }
     @font-face {
       font-family: 'Griffy';
-      src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+      src: url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+           url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+      font-weight: normal;
+      font-style: normal;
     }
     @font-face {
       font-family: 'Comfortaa';
-      src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+      src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+           url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+      font-weight: normal;
+      font-style: normal;
     }
+
     /* --- Global Styles --- */
+    /* Set base styles for the entire document */
     body, html {
       margin: 0;
       padding: 0;
-      background: #222;
-      color: #eee;
+      background: #222;        /* Dark background for the dashboard */
+      color: #eee;             /* Light text color for contrast */
       font-family: 'Comfortaa', sans-serif;
       font-size: 16px;
       line-height: 1.5;
     }
+    /* Container styling for centering content and adding padding */
     .container {
- 
       margin: auto;
       padding: 1rem;
     }
+
     /* --- Header Card: Logo & Dropdowns --- */
-.header-card {
-width:100vw;
-min-height:4rem;
-  padding: 1rem;
- 
-  box-sizing: border-box;
-  background: #333;
-  color: #fff;
-  border-radius: 8px;
-  /* etc. */
-}
+    /* Styles for the header section that contains the logo and dropdowns */
+    .header-card {
+      width: 100vw;
+      min-height: 4rem;
+      padding: 1rem;
+      box-sizing: border-box;
+      background: #333;
+      color: #fff;
+      border-radius: 8px;
+    }
 
-
-.logoCard{background-color: #222 !important}
-   .logo {
+    /* Special class for the logo card to override background color */
+    .logoCard {
+      background-color: #222 !important;
+    }
+    .logo {
       width: 16rem;
       margin-left: auto;
     }
+    /* Flex container for dropdowns to ensure they are spaced out and responsive */
     .dropdowns {
       display: flex;
       flex-wrap: wrap;
@@ -80,8 +119,8 @@ min-height:4rem;
       gap: 1rem;
       width: 100%;
     }
+    /* Styles for each dropdown select element */
     .dropdowns select {
-   
       font-size: .8rem;
       border: 1px solid #555;
       border-radius: 4px;
@@ -89,23 +128,25 @@ min-height:4rem;
       color: #eee;
     }
 
-    /* We'll later set its background color based on predicted winner. */
     /* --- Robot Cards Container (Grid) --- */
+    /* Grid layout for robot cards; cards will adjust automatically to the screen width */
     .robot-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 16rem);
-  gap: 1rem;
-  justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 16rem);
+      gap: 1rem;
+      justify-content: center;
     }
 
+    /* Additional grid container class */
     .cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 16rem);
-  gap: 1rem;
-  justify-content: center;
-}
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 16rem);
+      gap: 1rem;
+      justify-content: center;
+    }
 
     /* --- Each Robot Card --- */
+    /* Card styling for individual robot cards */
     .robot-card {
       width: 16rem;
       height: 16rem;
@@ -113,11 +154,12 @@ min-height:4rem;
       color: #333;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      position: relative;
-      overflow: hidden;
-      /* Random rotation will be applied inline */
+      position: relative;      /* To allow absolutely positioned inner elements */
+      overflow: hidden;        /* Hide overflow for clean card edges */
+      /* Note: Random rotation may be applied inline if desired */
     }
     /* --- Top Row (robot name and alliance) --- */
+    /* Header section of the card that displays the robot's name and alliance */
     .robot-card .top-row {
       position: absolute;
       top: 0;
@@ -127,34 +169,39 @@ min-height:4rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.9); /* Slightly opaque background for readability */
       z-index: 2;
       box-sizing: border-box;
     }
+    /* Styling for text within the top row */
     .robot-card .robot-name, .robot-card .alliance {
       font-weight: bold;
       font-size: 1.2rem;
     }
     /* --- Views Container --- */
+    /* Container for different views (stat cards, performance charts, etc.) inside a robot card */
     .robot-card .view {
       position: absolute;
-      top: 3rem; /* leave space for the top row */
+      top: 3rem; /* Leave space for the top row */
       left: 0;
       width: 100%;
       height: calc(100% - 3rem);
-      transition: transform 0.5s ease, opacity 0.5s ease;
-      opacity: 0;
+      transition: transform 0.5s ease, opacity 0.5s ease; /* Smooth transition for view changes */
+      opacity: 0; /* Start hidden */
       z-index: 1;
     }
+    /* Active view is fully visible */
     .robot-card .view.active {
       transform: translateX(0);
       opacity: 1;
     }
+    /* Inactive view is shifted off-screen */
     .robot-card .view.inactive {
       transform: translateX(100%);
       opacity: 0;
     }
-    /* --- Stat Cards (View 1) in a grid (2 columns) --- */
+    /* --- Stat Cards (View 1) --- */
+    /* Grid layout for stat cards inside the robot card */
     .stat-cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -163,6 +210,7 @@ min-height:4rem;
       box-sizing: border-box;
       height: 100%;
     }
+    /* Individual stat card style */
     .stat-card {
       width: 100%;
       height: 3rem;
@@ -175,7 +223,7 @@ min-height:4rem;
       text-align: center;
       box-sizing: border-box;
     }
-    /* Stat card colors (order: Matches, Location, Offense, Defense, Auton, Co-op) */
+    /* Color coding for different stat cards */
     .stat-card.matches { background-color: rgba(20,96,61,0.6); border-color: rgb(20,96,61); }
     .stat-card.location { background-color: rgba(20,55,96,0.6); border-color: rgb(20,55,96); }
     .stat-card.offense { background-color: rgba(96,20,55,0.6); border-color: rgb(96,20,55); }
@@ -183,22 +231,26 @@ min-height:4rem;
     .stat-card.auton { background-color: rgba(96,23,20,0.6); border-color: rgb(96,23,20); }
     .stat-card.coop { background-color: rgba(33,91,159,0.6); border-color: rgb(33,91,159); }
     /* --- Performance Chart (View 2) --- */
+    /* Container for the performance chart */
     .performance-chart {
       padding: 0.5rem;
       box-sizing: border-box;
       height: 100%;
     }
+    /* Force canvas to take full available size */
     .performance-chart canvas {
       width: 100% !important;
       height: 100% !important;
     }
     /* --- Scoring Breakdown Table (View 3) --- */
+    /* Container for the scoring breakdown table */
     .scoring-breakdown {
       padding: 0.5rem;
       box-sizing: border-box;
       overflow-y: auto;
       height: 100%;
     }
+    /* Styles for the table showing scoring breakdown */
     .scoring-table {
       width: 100%;
       border-collapse: collapse;
@@ -213,217 +265,214 @@ min-height:4rem;
       background: #f0f0f0;
       color: #333;
     }
-    .vsImg{width:4rem;}
+    /* Class for the VS image (used between alliances) */
+    .vsImg {
+      width: 4rem;
+    }
 
-#predictionCard{font-size: .75rem; display:none; 
+    /* --- Prediction Card --- */
+    /* Styling for the prediction card that displays match predictions */
+    #predictionCard {
+      font-size: 0.75rem;
+      display: none; /* Initially hidden until prediction data is available */
+      padding-left: 12px;
+    }
 
-padding-left: 12px
-}
+    /* --- Loader Styles --- */
+    /* Loader element for visual feedback while prediction is processing */
+    .loader {
+      width: 85px;
+      height: 50px;
+      /* CSS custom properties for gradients */
+      --g1: conic-gradient(from 90deg at left 3px top 3px, #0000 90deg, #fff 0);
+      --g2: conic-gradient(from -90deg at bottom 3px right 3px, #0000 90deg, #fff 0);
+      background: var(--g1), var(--g1), var(--g1), var(--g2), var(--g2), var(--g2);
+      background-position: left, center, right;
+      background-repeat: no-repeat;
+      animation: l10 1s infinite alternate;
+    }
+    /* Keyframes for loader animation */
+    @keyframes l10 {
+      0%, 2%   { background-size: 25px 50%, 25px 50%, 25px 50% }
+      20%      { background-size: 25px 25%, 25px 50%, 25px 50% }
+      40%      { background-size: 25px 100%, 25px 25%, 25px 50% }
+      60%      { background-size: 25px 50%, 25px 100%, 25px 25% }
+      80%      { background-size: 25px 50%, 25px 50%, 25px 100% }
+      98%, 100% { background-size: 25px 50%, 25px 50%, 25px 50% }
+    }
+    .loader { margin: auto; }
+    #predictionCard { border: none; background-color: #222; }
 
+    /* Loader2 styling for additional loader feedback */
+    .loader2 {
+      color: #fff;
+      font-weight: bold;
+      font-family: monospace;
+      display: inline-grid;
+      font-size: 1.5rem;
+      margin: auto;
+      text-align: center;
+    }
+    /* Loader2 pseudo-elements for text masking effect */
+    .loader2:before,
+    .loader2:after {
+      content: "Processing Random Forest Regression Prediction...";
+      grid-area: 1/1;
+      -webkit-mask-size: 2ch 100%, 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: l37 1s infinite;
+    }
+    .loader2:before {
+      -webkit-mask-image:
+        linear-gradient(#000 0 0),
+        linear-gradient(#000 0 0);
+    }
+    .loader2:after {
+      -webkit-mask-image: linear-gradient(#000 0 0);
+      transform: scaleY(0.5);
+    }
+    /* Keyframes for loader2 text masking animation */
+    @keyframes l37 {
+      0%    { -webkit-mask-position: 1ch 0, 0 0 }
+      12.5% { -webkit-mask-position: 100% 0, 0 0 }
+      25%   { -webkit-mask-position: 4ch 0, 0 0 }
+      37.5% { -webkit-mask-position: 8ch 0, 0 0 }
+      50%   { -webkit-mask-position: 2ch 0, 0 0 }
+      62.5% { -webkit-mask-position: 100% 0, 0 0 }
+      75%   { -webkit-mask-position: 0ch 0, 0 0 }
+      87.5% { -webkit-mask-position: 6ch 0, 0 0 }
+      100%  { -webkit-mask-position: 3ch 0, 0 0 }
+    }
 
-.loader {
-  width: 85px;
-  height: 50px;
-  --g1:conic-gradient(from  90deg at left   3px top   3px,#0000 90deg,#fff 0);
-  --g2:conic-gradient(from -90deg at bottom 3px right 3px,#0000 90deg,#fff 0);
-  background: var(--g1),var(--g1),var(--g1), var(--g2),var(--g2),var(--g2);
-  background-position: left,center,right;
-  background-repeat: no-repeat;
-  animation: l10 1s infinite alternate;
-}
-@keyframes l10 {
-  0%,
-  2%   {background-size:25px 50% ,25px 50% ,25px 50%}
-  20%  {background-size:25px 25% ,25px 50% ,25px 50%}
-  40%  {background-size:25px 100%,25px 25% ,25px 50%}
-  60%  {background-size:25px 50% ,25px 100%,25px 25%}
-  80%  {background-size:25px 50% ,25px 50% ,25px 100%}
-  98%,
-  100% {background-size:25px 50% ,25px 50% ,25px 50%}
-}
-
-
-
-
-.loader{
-margin:auto;
-}
-#predictionCard{
-
-border:none;
-  background-color: #222;}
-
-
-
-.loader2 {
-color:#fff;
-  font-weight: bold;
-  font-family: monospace;
-  display: inline-grid;
-  font-size: 1.5rem;
-  margin:auto;
-  text-align: center;
-}
-.loader2:before,
-.loader2:after {
-  content:"Processing Random Forest Regression Prediction...";
-  grid-area: 1/1;
-  -webkit-mask-size: 2ch 100%,100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-composite: xor;
-          mask-composite:exclude;
-  animation: l37 1s infinite;
-}
-.loader2:before {
-  -webkit-mask-image:
-    linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0);
-}
-.loader2:after {
-  -webkit-mask-image:linear-gradient(#000 0 0);
-  transform: scaleY(0.5);
-}
-
-@keyframes l37{
-  0%    {-webkit-mask-position:1ch  0,0 0}
-  12.5% {-webkit-mask-position:100% 0,0 0}
-  25%   {-webkit-mask-position:4ch  0,0 0}
-  37.5% {-webkit-mask-position:8ch  0,0 0}
-  50%   {-webkit-mask-position:2ch  0,0 0}
-  62.5% {-webkit-mask-position:100% 0,0 0}
-  75%   {-webkit-mask-position:0ch  0,0 0}
-  87.5% {-webkit-mask-position:6ch  0,0 0}
-  100%  {-webkit-mask-position:3ch  0,0 0}
-}
-
-
- select {
-            font-size: 1.1rem; /* Increases font size for better readability */
-            padding: 12px; /* Adds padding for touch-friendly areas */
-            border: 1px solid #fff; /* Adds a white border */
-            background-color: #222; /* Sets background color to match the theme */
-            color: #fff; /* Sets text color to white */
-            border-radius: 5px; /* Rounds the corners */
-            appearance: none; /* Removes default dropdown arrow */
-            -webkit-appearance: none; /* Removes default dropdown arrow in WebKit browsers */
-            -moz-appearance: none; /* Removes default dropdown arrow in Mozilla browsers */
-            position: relative; /* Positions the element relative for custom styling */
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSI2IiB2aWV3Qm94PSIwIDAgMTAgNiI+PHBhdGggZD0iTTAgMGw1IDUgNSA1VjBIMFYwWiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg=='); /* Adds a custom dropdown arrow */
-            background-repeat: no-repeat; /* Prevents the background image from repeating */
-            background-position: right 10px center; /* Positions the background image */
-            background-size: 10px; /* Sets the size of the background image */
-            padding-right: 30px; /* Adds right padding to make space for the arrow */
-        }
-
-
-
+    /* --- Custom Select Styling --- */
+    /* Custom styling for dropdown select elements */
+    select {
+      font-size: 1.1rem; /* Increase font size for readability */
+      padding: 12px;     /* Add padding for touch-friendly areas */
+      border: 1px solid #fff; /* White border */
+      background-color: #222; /* Match dashboard theme */
+      color: #fff;       /* White text */
+      border-radius: 5px; /* Rounded corners */
+      appearance: none;  /* Remove default styling */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      position: relative;
+      /* Add a custom dropdown arrow using a base64 encoded SVG */
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSI2IiB2aWV3Qm94PSIwIDAgMTAgNiI+PHBhdGggZD0iTTAgMGw1IDUgNSA1VjBIMFYwWiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 10px;
+      padding-right: 30px; /* Extra space for the arrow */
+    }
   </style>
 </head>
 <body>
   <div class="containerOuter">
-  <div class="container">
-    <!-- Header Card -->
-    <div class="card header-card">
-      <div class="dropdowns">
-        <div>
-          <label for="sortOption"><strong>Sort by:</strong></label><br>
-          <select id="sortOption" onchange="updateRobotCards()">
+    <div class="container">
+      <!-- Header Card -->
+      <div class="card header-card">
+        <div class="dropdowns">
+          <!-- Dropdown for sorting robot cards -->
+          <div>
+            <label for="sortOption"><strong>Sort by:</strong></label><br>
+            <select id="sortOption" onchange="updateRobotCards()">
               <option value="alliance" selected>Alliance</option>
               <option value="offense_score">Offense Score</option>
               <option value="defense_score">Defense Score</option>
               <option value="cooperative_score">Cooperative Score</option>
               <option value="robot">Robot</option> <!-- New sort option -->
-          </select>
+            </select>
+          </div>
+
+          <!-- Dropdowns for selecting alliance robots -->
+          <div>
+            <label for="red1"><strong>Red 1:</strong></label><br>
+            <select id="red1">
+              <option></option>
+            </select>
+          </div>
+          <div>
+            <label for="red2"><strong>Red 2:</strong></label><br>
+            <select id="red2">
+              <option>red 2</option>
+            </select>
+          </div>
+          <div>
+            <label for="blue3"><strong>Red 3:</strong></label><br>
+            <select id="red3">
+              <option>red 3</option>
+            </select>
+          </div>
+          <div>
+            <!-- VS image between alliances -->
+            <img class="vsImg" src="../images/vs.png" alt="vs">
+          </div>
+          <div>
+            <label for="blue1"><strong>Blue 1:</strong></label><br>
+            <select id="blue1">
+              <option>blue 1</option>
+            </select>
+          </div>
+          <div>
+            <label for="blue2"><strong>Blue 2:</strong></label><br>
+            <select id="blue2">
+              <option>blue 2</option>
+            </select>
+          </div>
+          <div>
+            <label for="blue3"><strong>Blue 3:</strong></label><br>
+            <select id="blue3">
+              <option>blue 3</option>
+            </select>
+          </div>
         </div>
-
-
-
-
-       <div>
-  <label for="red1"><strong>Red 1:</strong></label><br>
-  <select id="red1">
-    <option>
-    </option>
-  </select>
-</div>
-<div>
-  <label for="red2"><strong>Red 2:</strong></label><br>
-  <select id="red2">
-    <option>red 2
-    </option>
-  </select>
-</div>
-<div>
-  <label for="blue3"><strong>Red 3:</strong></label><br>
-  <select id="red3">
-    <option>red 3
-    </option>
-  </select>
-</div>
-<div>
-  <img class="vsImg" src="../images/vs.png" alt="vs">
-</div>
-<div>
-  <label for="blue1"><strong>Blue 1:</strong></label><br>
-  <select id="blue1">
-  <option>blue 1
-    </option>
-  </select>
-</div>
-<div>
-  <label for="blue2"><strong>Blue 2:</strong></label><br>
-  <select id="blue2">
-    <option>blue 2
-    </option>
-  </select>
-</div>
-<div>
-  <label for="blue3"><strong>Blue 3:</strong></label><br>
-  <select id="blue3">
-    <option>blue 3
-    </option>
-  </select>
-</div>
-
-
-
-
-
-
-
-
       </div>
-    </div>
-    <!-- Robot Cards Container -->
-    <div id="robotContainer" class="robot-cards">
-      <div class="robot-card logoCard" id="card_1">
-        <img class="logo" src="../images/statgoblinlogo.webp" alt="Logo">
+      <!-- Robot Cards Container -->
+      <div id="robotContainer" class="robot-cards">
+        <!-- Initial placeholder card for the logo -->
+        <div class="robot-card logoCard" id="card_1"></div>
       </div>
     </div>
   </div>
-</div>
   
+  <!-- Include Chart.js library for rendering performance charts -->
   <script src="../js/Chart.bundle.js"></script>
   <script>
-    // Global variables
-    let fetchedRobots = [];
-    let aggregatedData = {};
-    let filterRobots = [];
-    
-    // Fetch matches for a selected event
+    // Global variables to store data from API calls and filtering info
+    let fetchedRobots = [];  // Array to store robot data fetched from the server
+    let aggregatedData = {}; // Object to store prediction data
+    let filterRobots = [];   // Array of robot IDs to exclude (for filtering)
+
+    // -----------------------------
+    // FETCH MATCHES FUNCTION
+    // -----------------------------
+    // Fetch match data for a selected event from the server.
     function fetchMatches() {
+      // Get the selected event from the dropdown
       const eventName = document.getElementById("eventDropdown").value;
       const matchDropdown = document.getElementById("matchDropdown");
       const container = document.getElementById("robotContainer");
+
+      // Reset dropdown options and container content
       matchDropdown.innerHTML = "<option value=''>-- Select Match --</option><option value='all'>All Matches</option>";
       container.innerHTML = "";
+
+      // If no event is selected, do nothing
       if (!eventName) return;
+
+      // Create an XMLHttpRequest to fetch match data
       const xhr = new XMLHttpRequest();
       xhr.open("GET", "fetch_matches.php?event_name=" + encodeURIComponent(eventName), true);
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
           let response = JSON.parse(xhr.responseText);
-          if (response.error) { console.error(response.error); return; }
+          if (response.error) { 
+            console.error(response.error); 
+            return; 
+          }
+          // Loop through matches and add each as an option in the dropdown
           if (response.length > 0) {
             response.forEach(match => {
               let option = document.createElement("option");
@@ -437,17 +486,23 @@ color:#fff;
       xhr.send();
     }
     
-    // Fetch robot card data
+    // -----------------------------
+    // FETCH ROBOT CARDS FUNCTION
+    // -----------------------------
+    // Fetch robot card data for a given event.
     function fetchRobotCards() {
-const eventData = <?php echo json_encode($events); ?>;
-  const currentEvent = eventData[0];
-  const eventName = currentEvent.event_name;
-
+      // Retrieve event data that was fetched earlier in PHP
+      const eventData = <?php echo json_encode($events); ?>;
+      const currentEvent = eventData[0];
+      const eventName = currentEvent.event_name;
+      // For this function, we assume match number is 'all'
       const matchNumber = 'all';
 
       const container = document.getElementById("robotContainer");
       container.innerHTML = "";
       if (!eventName || !matchNumber) return;
+
+      // Determine which URL to use based on the match number selection
       const xhr = new XMLHttpRequest();
       let url = (matchNumber !== 'all')
           ? "fetch_robot_data.php?event_name=" + encodeURIComponent(eventName) + "&match_number=" + encodeURIComponent(matchNumber)
@@ -461,11 +516,14 @@ const eventData = <?php echo json_encode($events); ?>;
               container.innerHTML = `<p style="color:red;">${data.error}</p>`;
               return;
             }
+            // Normalize the returned data into an array
             let robotsArray = Array.isArray(data) ? data : (data.robots && Array.isArray(data.robots)) ? data.robots : [data];
             fetchedRobots = robotsArray;
             filterRobots = [];
+            // Update robot cards with the fetched data
             updateRobotCards();
-      populateAllRobotDropdowns();
+            // Populate dropdowns for robot selection
+            populateAllRobotDropdowns();
           } catch (error) {
             console.error("JSON Parsing Error:", error);
             container.innerHTML = `<p style="color:red;">Error processing robot data.</p>`;
@@ -473,59 +531,68 @@ const eventData = <?php echo json_encode($events); ?>;
         }
       };
       xhr.send();
-
     }
     
+    // -----------------------------
+    // UPDATE ROBOT CARDS FUNCTION
+    // -----------------------------
+    // Sorts, filters, and then displays the robot cards.
+    function updateRobotCards() {
+      const sortBy = document.getElementById("sortOption").value;
+      let sorted = [...fetchedRobots];
 
-    
-function updateRobotCards() {
-  const sortBy = document.getElementById("sortOption").value;
-  let sorted = [...fetchedRobots];
+      // Sort the robots based on the selected option
+      if (sortBy === "robot") {
+        // Compare robot IDs as strings for proper alphabetical sorting
+        sorted.sort((a, b) => String(a.robot).localeCompare(String(b.robot)));
+      } else if (sortBy === "alliance") {
+        sorted.sort((a, b) => (a.alliance || "Unknown").localeCompare(b.alliance || "Unknown"));
+      } else {
+        // For numerical stats, sort in descending order
+        sorted.sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
+      }
 
-  if (sortBy === "robot") {
-    // Ensure both values are strings for proper comparison
-    sorted.sort((a, b) => String(a.robot).localeCompare(String(b.robot)));
-  } else if (sortBy === "alliance") {
-    sorted.sort((a, b) => (a.alliance || "Unknown").localeCompare(b.alliance || "Unknown"));
-  } else {
-    sorted.sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
-  }
+      // Filter out robots that are in the filterRobots array
+      const finalList = sorted.filter(robot => !filterRobots.includes(parseInt(robot.robot, 10)));
+      // Call function to render the robot cards
+      displayRobotCards(finalList);
+    }
 
-  // Filter out any robot IDs that are in filterRobots.
-  const finalList = sorted.filter(robot => !filterRobots.includes(parseInt(robot.robot, 10)));
-  displayRobotCards(finalList);
-}
-
-
-    
-    // Helper: Format location (replace underscores, capitalize first letter)
+    // -----------------------------
+    // HELPER FUNCTION: FORMAT LOCATION
+    // -----------------------------
+    // Formats a location string by replacing underscores with spaces and capitalizing the first letter.
     function formatLocation(str) {
       if (!str) return "N/A";
       str = str.replace(/_/g, " ");
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
     
+    // -----------------------------
+    // DISPLAY ROBOT CARDS FUNCTION
+    // -----------------------------
+    // Builds the HTML for each robot card and renders performance charts.
     function displayRobotCards(robots) {
       const container = document.getElementById("robotContainer");
       if (!container) return;
-  let html = `
-<div class="robot-card logoCard" id="card_2">
-  <img class="logo" src="../images/owlanalytics.png" alt="Logo">
-</div>
-<div id="predictionCard" class="card robot-card prediction-card">
 
-    <h3>Match Prediction</h3>
-    <p id="predictionResult">Waiting for prediction...</p>
+      // Start with a header/logo card and a prediction card
+      let html = `
+        <div class="robot-card logoCard" id="card_2">
+          <img class="logo" src="../images/owlanalytics.png" alt="Logo">
+        </div>
+        <div id="predictionCard" class="card robot-card prediction-card">
+          <h3>Match Prediction</h3>
+          <p id="predictionResult">Waiting for prediction...</p>
+        </div>
+      `;
 
-</div>
- `;
-
-  robots.forEach(robot => {
-    html += `
-          <div class="robot-card" >
+      // Loop through each robot and create its card HTML
+      robots.forEach(robot => {
+        html += `
+          <div class="robot-card">
             <div class="top-row">
               <div class="robot-name">Robot ${robot.robot}</div>
-       
             </div>
             <!-- View 1: Stat Cards -->
             <div class="view stat-cards active">
@@ -594,9 +661,11 @@ function updateRobotCards() {
           </div>
         `;
       });
+
+      // Render the built HTML into the robot container
       container.innerHTML = html;
       
-      // Create performance charts for each robot.
+      // For each robot, create a performance chart using Chart.js
       robots.forEach(robot => {
         const canvas = document.getElementById("chart_" + robot.robot);
         if (!canvas) return;
@@ -627,6 +696,7 @@ function updateRobotCards() {
             borderWidth: 1
           }]
         };
+        // Create a new bar chart on the canvas
         new Chart(ctx, {
           type: "bar",
           data: chartData,
@@ -642,69 +712,77 @@ function updateRobotCards() {
         });
       });
       
-      // Cycle through views with sliding effect:
+      // After building all cards, start the automatic cycling of views on each card
       cycleRobotCardViews();
     }
     
-function cycleRobotCardViews() {
-  const robotCards = document.querySelectorAll(".robot-card");
-  robotCards.forEach(card => {
-    const views = card.querySelectorAll(".view");
-    if (views.length < 2) return;
-    
-    // Set up initial view positions
-    views.forEach((view, idx) => {
-      view.style.position = "absolute";
-      view.style.top = "3rem"; // leave room for top row
-      view.style.left = "0";
-      view.style.width = "100%";
-      view.style.height = "calc(100% - 3rem)";
-      view.style.transition = "transform 0.5s ease, opacity 0.5s ease";
-      view.style.transform = (idx === 0) ? "translateX(0)" : "translateX(100%)";
-      view.style.opacity = (idx === 0) ? "1" : "0";
-    });
-    
-    let currentIndex = 0;
-    function cycle() {
-      // Slide current view out to left and fade out.
-      views[currentIndex].style.transform = "translateX(-100%)";
-      views[currentIndex].style.opacity = "0";
-      
-      // Determine next view index.
-      currentIndex = (currentIndex + 1) % views.length;
-      
-      // Slide next view in from right and fade in.
-      views[currentIndex].style.transform = "translateX(0)";
-      views[currentIndex].style.opacity = "1";
-      
-      // After the transition, reset the previous view off-screen to right.
-      setTimeout(() => {
-        let prevIndex = (currentIndex - 1 + views.length) % views.length;
-        views[prevIndex].style.transform = "translateX(100%)";
-      }, 500); // 0.5s matches the CSS transition
-      
-      // Set a random delay between 2000 and 5000ms before cycling again.
-      const randomDelay = 4000 + Math.random() * 6000;
-      setTimeout(cycle, randomDelay);
+    // -----------------------------
+    // CYCLE ROBOT CARD VIEWS FUNCTION
+    // -----------------------------
+    // Automatically cycles through the different views (stat cards, chart, table) within each robot card.
+    function cycleRobotCardViews() {
+      const robotCards = document.querySelectorAll(".robot-card");
+      robotCards.forEach(card => {
+        const views = card.querySelectorAll(".view");
+        // If there is only one view, no need to cycle
+        if (views.length < 2) return;
+        
+        // Initialize each view's position and opacity
+        views.forEach((view, idx) => {
+          view.style.position = "absolute";
+          view.style.top = "3rem"; // leave room for the top row
+          view.style.left = "0";
+          view.style.width = "100%";
+          view.style.height = "calc(100% - 3rem)";
+          view.style.transition = "transform 0.5s ease, opacity 0.5s ease";
+          // First view is visible; others start off-screen to the right
+          view.style.transform = (idx === 0) ? "translateX(0)" : "translateX(100%)";
+          view.style.opacity = (idx === 0) ? "1" : "0";
+        });
+        
+        let currentIndex = 0;
+        // Define a cycle function to change views automatically
+        function cycle() {
+          // Animate current view sliding out to the left
+          views[currentIndex].style.transform = "translateX(-100%)";
+          views[currentIndex].style.opacity = "0";
+          
+          // Update index to next view
+          currentIndex = (currentIndex + 1) % views.length;
+          
+          // Animate the next view sliding in from the right
+          views[currentIndex].style.transform = "translateX(0)";
+          views[currentIndex].style.opacity = "1";
+          
+          // After transition, reset the previous view off-screen to the right
+          setTimeout(() => {
+            let prevIndex = (currentIndex - 1 + views.length) % views.length;
+            views[prevIndex].style.transform = "translateX(100%)";
+          }, 500); // 0.5s matches the CSS transition duration
+          
+          // Set a random delay (between 4 and 10 seconds) before the next cycle
+          const randomDelay = 4000 + Math.random() * 6000;
+          setTimeout(cycle, randomDelay);
+        }
+        
+        // Start the cycle with an initial random delay (between 6 and 14 seconds)
+        const initialDelay = 6000 + Math.random() * 8000;
+        setTimeout(cycle, initialDelay);
+      });
     }
     
-    // Start the cycle with a random initial delay.
-    const initialDelay = 6000 + Math.random() * 8000;
-    setTimeout(cycle, initialDelay);
-  });
-}
-
-    
-
-    
-    // For prediction, here we assume a separate fetchPrediction() function exists.
-    // (The prediction functionality is not fully detailed here, but you can
-    // adapt your existing predict.php logic.)
+    // -----------------------------
+    // FETCH PREDICTION FUNCTION
+    // -----------------------------
+    // This function fetches match prediction data based on current robot data.
     function fetchPrediction() {
+      // Retrieve the event and match selection values
       const eventName = document.getElementById("eventDropdown").value;
       const matchNumber = document.getElementById("matchDropdown").value;
       let blueAlliance = [];
       let redAlliance = [];
+      
+      // Loop through each robot to classify by alliance
       fetchedRobots.forEach(robot => {
         if (robot.alliance && robot.alliance.toLowerCase() === "blue") {
           blueAlliance.push(robot.robot.toString().trim());
@@ -713,6 +791,8 @@ function cycleRobotCardViews() {
         }
       });
       let hist_weight = 0.5;
+      
+      // Build the API URL with query parameters
       const apiUrl = `predict.php?event_name=${encodeURIComponent(eventName)}&match_no=${encodeURIComponent(matchNumber)}&blue_alliance=${encodeURIComponent(blueAlliance.join(','))}&red_alliance=${encodeURIComponent(redAlliance.join(','))}&hist_weight=${encodeURIComponent(hist_weight)}`;
       const xhr = new XMLHttpRequest();
       xhr.open("GET", apiUrl, true);
@@ -734,284 +814,259 @@ function cycleRobotCardViews() {
       xhr.send();
     }
     
-    // Update prediction display in the prediction card.
-//    function updatePredictionDisplay() {
-//      let headerHtml = `<strong>Event:</strong> ${aggregatedData.event_name}<br>`;
-//      headerHtml += `<strong>Match No:</strong> ${aggregatedData.match_no}<br>`;
-//      headerHtml += `<strong>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
-//      headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
-//      headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br>`;
-//      // Update header content.
-//      document.getElementById("predictionResult").innerHTML = headerHtml;
-//      
-//      // Change prediction card background color based on winner.
-//      const card = document.getElementById("predictionCard");
-//      if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
-//        card.style.backgroundColor = "#cce5ff"; // light blue
-//      } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
-//        card.style.backgroundColor = "#f8d7da"; // light red
-//      } else {
-//        card.style.backgroundColor = "#e2e3e5"; // light gray for tie/other
-//      }
-//    }
-function populateAllRobotDropdowns() {
-  // Get a unique list of robot identifiers from your fetched data.
-  const uniqueRobots = [...new Set(fetchedRobots.map(r => r.robot))];
-  // Array of your dropdown IDs.
-  const dropdownIds = ["red1", "red2", "red3", "blue1", "blue2", "blue3"];
-  
-  dropdownIds.forEach(id => {
-    const dropdown = document.getElementById(id);
-    if (dropdown) {
-      // Clear existing options and add a default option.
-      dropdown.innerHTML = "<option value=''>-- Select Robot --</option>";
-      uniqueRobots.forEach(robot => {
-        let option = document.createElement("option");
-        option.value = robot;
-        option.textContent = robot;
-        dropdown.appendChild(option);
+    // -----------------------------
+    // UPDATE PREDICTION DISPLAY FUNCTION
+    // -----------------------------
+    // (This function is commented out in the code; uncomment and modify as needed.)
+    // function updatePredictionDisplay() {
+    //   let headerHtml = `<strong>Event:</strong> ${aggregatedData.event_name}<br>`;
+    //   headerHtml += `<strong>Match No:</strong> ${aggregatedData.match_no}<br>`;
+    //   headerHtml += `<strong>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
+    //   headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
+    //   headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br>`;
+    //   // Update the prediction result container with headerHtml
+    //   document.getElementById("predictionResult").innerHTML = headerHtml;
+    //   
+    //   // Change prediction card background color based on predicted winner
+    //   const card = document.getElementById("predictionCard");
+    //   if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
+    //     card.style.backgroundColor = "#cce5ff"; // light blue
+    //   } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
+    //     card.style.backgroundColor = "#f8d7da"; // light red
+    //   } else {
+    //     card.style.backgroundColor = "#e2e3e5"; // light gray for tie/other
+    //   }
+    // }
+
+    // -----------------------------
+    // POPULATE ALL ROBOT DROPDOWNS FUNCTION
+    // -----------------------------
+    // Populates the dropdown menus for robot selections with unique robot identifiers.
+    function populateAllRobotDropdowns() {
+      // Extract unique robot IDs from fetchedRobots
+      const uniqueRobots = [...new Set(fetchedRobots.map(r => r.robot))];
+      // Define the dropdown IDs to populate
+      const dropdownIds = ["red1", "red2", "red3", "blue1", "blue2", "blue3"];
+      
+      // Loop through each dropdown and add options
+      dropdownIds.forEach(id => {
+        const dropdown = document.getElementById(id);
+        if (dropdown) {
+          // Clear existing options and add a default placeholder
+          dropdown.innerHTML = "<option value=''>-- Select Robot --</option>";
+          uniqueRobots.forEach(robot => {
+            let option = document.createElement("option");
+            option.value = robot;
+            option.textContent = robot;
+            dropdown.appendChild(option);
+          });
+        }
       });
     }
-  });
-}
- 
-
- function getSelectedAllianceRobots() {
-  // Define the dropdown IDs for each alliance.
-  const blueIds = ["blue1", "blue2", "blue3"];
-  const redIds = ["red1", "red2", "red3"];
-  
-  // Collect selected values.
-  let blueAlliance = blueIds.map(id => {
-    const dd = document.getElementById(id);
-    return dd ? dd.value : "";
-  }).filter(val => val !== ""); // Filter out empty selections
-  
-  let redAlliance = redIds.map(id => {
-    const dd = document.getElementById(id);
-    return dd ? dd.value : "";
-  }).filter(val => val !== "");
-  
-  return { blueAlliance, redAlliance };
-}
-
-
-
-
-function checkAllDropdownsFilled() {
-  const ids = ["blue1", "blue2", "blue3", "red1", "red2", "red3"];
-  // Check that every dropdown has a non-empty value.
-  const allFilled = ids.every(id => {
-    const el = document.getElementById(id);
-    return el && el.value.trim() !== "";
-  });
-  if (allFilled) {
-    sendPredictionRequest();
-  }
-}
-
-
-["blue1", "blue2", "blue3", "red1", "red2", "red3"].forEach(id => {
-  const dropdown = document.getElementById(id);
-  if (dropdown) {
-    dropdown.addEventListener("change", checkAllDropdownsFilled);
-  }
-});
-
-
-function sendPredictionRequest() {
-  showPredictionLoading();
-  const eventData = <?php echo json_encode($events); ?>;
-  const currentEvent = eventData[0];
-  const eventName = currentEvent.event_name;
-  const matchNumber = 1313; // fixed value
-  const hist_weight = 0.5;
-
-  // Get selections from the dropdowns:
-  const blueAlliance = ["blue1", "blue2", "blue3"].map(id => document.getElementById(id).value);
-  const redAlliance = ["red1", "red2", "red3"].map(id => document.getElementById(id).value);
-
-  // Build the URL:
-  const apiUrl = `predict.php?event_name=${encodeURIComponent(eventName)}&match_no=${encodeURIComponent(matchNumber)}&blue_alliance=${encodeURIComponent(blueAlliance.join(','))}&red_alliance=${encodeURIComponent(redAlliance.join(','))}&hist_weight=${encodeURIComponent(hist_weight)}`;
-
-fetch(apiUrl)
-  .then(response => response.json())
-  .then(data => {
-    console.log("Prediction Data:", data);
-    // Assign the returned data to aggregatedData (or use data directly)
-    aggregatedData = data;  // <–– add this line
-  // Combine blue_stats and red_stats if needed (or use them separately)
-  let blueStats = [];
-  let redStats = [];
-
-  let blueContributions = [];
-  let redContributions = [];
-
-  if (aggregatedData.blue_stats && Array.isArray(aggregatedData.blue_stats)) {
-    blueStats = aggregatedData.blue_stats;
-  }
-  if (aggregatedData.red_stats && Array.isArray(aggregatedData.red_stats)) {
-    redStats = aggregatedData.red_stats;
-  }
-
-  if (aggregatedData.blue_contributions && Array.isArray(aggregatedData.blue_contributions)) {
-    blueContributions = aggregatedData.blue_contributions;
-  }
-  if (aggregatedData.red_contributions && Array.isArray(aggregatedData.red_contributions)) {
-    redContributions = aggregatedData.red_contributions;
-  }
-
-
-  
-    // Now use aggregatedData to build your header HTML:
-    let headerHtml = `<strong><p>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
-    headerHtml +='<table><th>Robot</th><th>Points</th>';
-          blueContributions.forEach(stat => {
-    headerHtml += `
-                     <tr><td>${stat.robot}</td><td> ${Number(stat.predicted_ppm).toFixed(2)}</td></tr>
-                 `;
-  });
-          headerHtml+='  </table>'
-;    headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
-
-headerHtml +='<table><th>Robot</th><th>Points</th>';
-          redContributions.forEach(stat => {
-    headerHtml += `
-                     <tr><td>${stat.robot}</td><td> ${Number(stat.predicted_ppm).toFixed(2)}</td></tr>
-                 `;
-  });
-          headerHtml+='  </table>'
-; 
-
-    headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br><br>`;
     
-
- 
-
-
-
-
-    const headerEl = document.getElementById("predictionCard");
-    headerEl.innerHTML = headerHtml;
-
-
-      if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
-        headerEl.style.backgroundColor = 'rgba(33,91,159,1)';
-        headerEl.style.color = '#fff';
-      } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
-        headerEl.style.backgroundColor = 'rgba(96,20,55,1)';
-        headerEl.style.color = '#fff';
-      } else {
-        headerEl.style.backgroundColor = "#e2e3e5"; // light gray for tie/other
-        headerEl.style.color = '#000';
-      }
-
-
-  })
-  .catch(error => {
-    console.error("Prediction fetch error:", error);
-  });
-
-
-
+    // -----------------------------
+    // GET SELECTED ALLIANCE ROBOTS FUNCTION
+    // -----------------------------
+    // Retrieves the selected robot values from alliance dropdowns.
+    function getSelectedAllianceRobots() {
+      // Define arrays of dropdown IDs for each alliance
+      const blueIds = ["blue1", "blue2", "blue3"];
+      const redIds = ["red1", "red2", "red3"];
       
+      // Map over dropdown IDs and extract non-empty selections
+      let blueAlliance = blueIds.map(id => {
+        const dd = document.getElementById(id);
+        return dd ? dd.value : "";
+      }).filter(val => val !== "");
 
+      let redAlliance = redIds.map(id => {
+        const dd = document.getElementById(id);
+        return dd ? dd.value : "";
+      }).filter(val => val !== "");
 
-}
-
-
-
-
-
-    fetchRobotCards();
-
-
-
-
-    function selectRobots() {
-
-const eventData = <?php echo json_encode($events); ?>;
-  if (!eventData || eventData.length === 0) {
-    console.error("No event data available");
-    return;
-  }
-  
-
-  const robots = eventData.map(row => row.robot);
-  console.log("Robots:", robots);
-  
- document.getElementById("red1").value = robots[1];
-document.getElementById("red1").dispatchEvent(new Event('change'));
-
-
-
-const red1 = document.getElementById("red1");
-const red2 = document.getElementById("red2");
-const red3 = document.getElementById("red3");
-const blue1 = document.getElementById("blue1");
-const blue2 = document.getElementById("blue2");
-const blue3 = document.getElementById("blue3");
-
-
-
-
-
-
-
-
-setTimeout(() => {
-red1.value = robots[0];
-red2.value = robots[1];
-red3.value = robots[2];
-blue1.value = robots[3];
-blue2.value = robots[4];
-blue3.value = robots[5];
-  
-
-red1.dispatchEvent(new Event('change'));
-red2.dispatchEvent(new Event('change'));
-red3.dispatchEvent(new Event('change'));
-blue1.dispatchEvent(new Event('change'));
-blue2.dispatchEvent(new Event('change'));
-blue3.dispatchEvent(new Event('change'));
-
-
-
-
-}, 2000); // adjust the delay as needed
-
-
-
-
-
-
+      return { blueAlliance, redAlliance };
     }
 
+    // -----------------------------
+    // CHECK IF ALL DROPDOWNS ARE FILLED FUNCTION
+    // -----------------------------
+    // Checks that all alliance dropdowns have a selected value before sending a prediction request.
+    function checkAllDropdownsFilled() {
+      const ids = ["blue1", "blue2", "blue3", "red1", "red2", "red3"];
+      // Verify that every dropdown has a non-empty trimmed value
+      const allFilled = ids.every(id => {
+        const el = document.getElementById(id);
+        return el && el.value.trim() !== "";
+      });
+      if (allFilled) {
+        sendPredictionRequest();
+      }
+    }
 
+    // Add event listeners to the alliance dropdowns to trigger check on change
+    ["blue1", "blue2", "blue3", "red1", "red2", "red3"].forEach(id => {
+      const dropdown = document.getElementById(id);
+      if (dropdown) {
+        dropdown.addEventListener("change", checkAllDropdownsFilled);
+      }
+    });
 
+    // -----------------------------
+    // SEND PREDICTION REQUEST FUNCTION
+    // -----------------------------
+    // Builds the API URL and sends a prediction request based on the selected robots.
+    function sendPredictionRequest() {
+      // Show a loading animation in the prediction card
+      showPredictionLoading();
 
+      // Retrieve event data from PHP
+      const eventData = <?php echo json_encode($events); ?>;
+      const currentEvent = eventData[0];
+      const eventName = currentEvent.event_name;
+      const matchNumber = 1313; // Fixed match number for this prediction
+      const hist_weight = 0.5;
 
+      // Get the selected alliance robot values from dropdowns
+      const blueAlliance = ["blue1", "blue2", "blue3"].map(id => document.getElementById(id).value);
+      const redAlliance = ["red1", "red2", "red3"].map(id => document.getElementById(id).value);
 
+      // Build the API URL with query parameters
+      const apiUrl = `predict.php?event_name=${encodeURIComponent(eventName)}&match_no=${encodeURIComponent(matchNumber)}&blue_alliance=${encodeURIComponent(blueAlliance.join(','))}&red_alliance=${encodeURIComponent(redAlliance.join(','))}&hist_weight=${encodeURIComponent(hist_weight)}`;
 
+      // Use fetch to request prediction data
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          console.log("Prediction Data:", data);
+          // Store the returned prediction data globally
+          aggregatedData = data;
+          
+          // Process the prediction data to create tables for each alliance
+          let blueStats = [];
+          let redStats = [];
+          let blueContributions = [];
+          let redContributions = [];
+
+          if (aggregatedData.blue_stats && Array.isArray(aggregatedData.blue_stats)) {
+            blueStats = aggregatedData.blue_stats;
+          }
+          if (aggregatedData.red_stats && Array.isArray(aggregatedData.red_stats)) {
+            redStats = aggregatedData.red_stats;
+          }
+          if (aggregatedData.blue_contributions && Array.isArray(aggregatedData.blue_contributions)) {
+            blueContributions = aggregatedData.blue_contributions;
+          }
+          if (aggregatedData.red_contributions && Array.isArray(aggregatedData.red_contributions)) {
+            redContributions = aggregatedData.red_contributions;
+          }
+
+          // Build HTML content for the prediction card
+          let headerHtml = `<strong><p>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
+          headerHtml += '<table><th>Robot</th><th>Points</th>';
+          blueContributions.forEach(stat => {
+            headerHtml += `<tr><td>${stat.robot}</td><td> ${Number(stat.predicted_ppm).toFixed(2)}</td></tr>`;
+          });
+          headerHtml += '</table>';
+          headerHtml += `<strong>Red Alliance Score:</strong> ${aggregatedData.red_score}<br>`;
+          headerHtml += '<table><th>Robot</th><th>Points</th>';
+          redContributions.forEach(stat => {
+            headerHtml += `<tr><td>${stat.robot}</td><td> ${Number(stat.predicted_ppm).toFixed(2)}</td></tr>`;
+          });
+          headerHtml += '</table>';
+          headerHtml += `<strong>Predicted Winner:</strong> ${aggregatedData.predicted_winner}<br><br>`;
+
+          // Update the prediction card with the generated HTML
+          const headerEl = document.getElementById("predictionCard");
+          headerEl.innerHTML = headerHtml;
+
+          // Adjust background color based on predicted winner
+          if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
+            headerEl.style.backgroundColor = 'rgba(33,91,159,1)';
+            headerEl.style.color = '#fff';
+          } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
+            headerEl.style.backgroundColor = 'rgba(96,20,55,1)';
+            headerEl.style.color = '#fff';
+          } else {
+            headerEl.style.backgroundColor = "#e2e3e5"; // Light gray for tie or other outcomes
+            headerEl.style.color = '#000';
+          }
+        })
+        .catch(error => {
+          console.error("Prediction fetch error:", error);
+        });
+    }
+
+    // -----------------------------
+    // INITIAL ROBOT SELECTION FUNCTION
+    // -----------------------------
+    // Automatically selects robot values for dropdowns based on event data.
+    function selectRobots() {
+      const eventData = <?php echo json_encode($events); ?>;
+      if (!eventData || eventData.length === 0) {
+        console.error("No event data available");
+        return;
+      }
+
+      // Extract robot identifiers from event data
+      const robots = eventData.map(row => row.robot);
+      console.log("Robots:", robots);
+      
+      // Initially assign a value and dispatch a change event
+      document.getElementById("red1").value = robots[1];
+      document.getElementById("red1").dispatchEvent(new Event('change'));
+
+      // Get references to all dropdown elements
+      const red1 = document.getElementById("red1");
+      const red2 = document.getElementById("red2");
+      const red3 = document.getElementById("red3");
+      const blue1 = document.getElementById("blue1");
+      const blue2 = document.getElementById("blue2");
+      const blue3 = document.getElementById("blue3");
+
+      // Use a delay to ensure dropdowns are populated before assigning values
+      setTimeout(() => {
+        red1.value = robots[0];
+        red2.value = robots[1];
+        red3.value = robots[2];
+        blue1.value = robots[3];
+        blue2.value = robots[4];
+        blue3.value = robots[5];
+
+        // Dispatch change events so that any listeners update accordingly
+        red1.dispatchEvent(new Event('change'));
+        red2.dispatchEvent(new Event('change'));
+        red3.dispatchEvent(new Event('change'));
+        blue1.dispatchEvent(new Event('change'));
+        blue2.dispatchEvent(new Event('change'));
+        blue3.dispatchEvent(new Event('change'));
+      }, 2000); // Delay set to 2000ms (adjust as needed)
+    }
+
+    // Call selectRobots to auto-fill the dropdowns on page load
     selectRobots();
 
+    // -----------------------------
+    // SHOW PREDICTION LOADING FUNCTION
+    // -----------------------------
+    // Displays a loading animation in the prediction card while data is being fetched.
+    function showPredictionLoading() {
+      const predictionContainer = document.getElementById("predictionCard");
 
+      predictionContainer.style.display = 'block';
+      predictionContainer.style.backgroundColor = '#222';
 
-function showPredictionLoading() {
-  const predictionContainer = document.getElementById("predictionCard");
-
-  predictionContainer.style.display = 'block'
-  predictionContainer.style.backgroundColor = '#222'
-
-  predictionContainer.innerHTML = '';
-  
-  predictionContainer.innerHTML = `<div class="loader"> </div> <div class="loader2"> </div><div class="loader"> </div> `;
-}
-
-
-
-
-
+      // Clear previous content
+      predictionContainer.innerHTML = '';
+      
+      // Add loader elements (HTML for two different loader animations)
+      predictionContainer.innerHTML = `<div class="loader"> </div> <div class="loader2"> </div><div class="loader"> </div>`;
+    }
+    
+    // -----------------------------
+    // INITIAL DATA FETCH
+    // -----------------------------
+    // Start by fetching the robot cards when the page loads.
+    fetchRobotCards();
   </script>
 </body>
 </html>

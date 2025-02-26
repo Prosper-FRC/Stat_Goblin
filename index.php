@@ -6,22 +6,22 @@
     <style>
 @font-face {
             font-family: 'Roboto';
-            src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            src: url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Griffy';
-            src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            src: url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Comfortaa';
-            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
+            url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
