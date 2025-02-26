@@ -75,7 +75,7 @@ FROM (
     GROUP BY robot, match_no
   ) AS t
 ) AS final
-WHERE match_rank <= 8
+WHERE match_rank <= 12
 ) aa;
     ";
 
