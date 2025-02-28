@@ -86,26 +86,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
     <meta charset="UTF-8">
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Schedule CSV with Drag and Drop</title>
+    <title>Owl Upload Schedule CSV with Drag and Drop</title>
     <style>
          @font-face {
             font-family: 'Roboto';
-            src: url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Griffy';
-            src: url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Comfortaa';
-            src: url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-            url('/../scouting/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
 <body>
   <div id="containerOuter">
     <div id="container">
-      <img src="../images/owlupload.png" class="logo" alt="Logo">
+      <a href=".."><img src="../images/owlupload.png" class="logo" alt="Logo"></a>
     <h2>Upload Schedule CSV</h2>
     <div class="drop-zone" id="drop-zone">
         Drag and drop your CSV file here, or click to select.

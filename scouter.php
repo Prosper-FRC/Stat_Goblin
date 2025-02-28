@@ -31,13 +31,24 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
             }
         }
 
-        /* Styling for the body element */
-       
-
- @font-face {
+         @font-face {
+            font-family: 'Roboto';
+            src: url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
             font-family: 'Comfortaa';
-            src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-            url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
@@ -111,24 +122,7 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
       margin: 0 auto 1rem auto;
     }
 
-        /* Styling for select elements */
-        select {
-            font-size: 1.1rem; /* Increases font size for better readability */
-            padding: 12px; /* Adds padding for touch-friendly areas */
-            border: 1px solid #fff; /* Adds a white border */
-            background-color: #222; /* Sets background color to match the theme */
-            color: #fff; /* Sets text color to white */
-            border-radius: 5px; /* Rounds the corners */
-            appearance: none; /* Removes default dropdown arrow */
-            -webkit-appearance: none; /* Removes default dropdown arrow in WebKit browsers */
-            -moz-appearance: none; /* Removes default dropdown arrow in Mozilla browsers */
-            position: relative; /* Positions the element relative for custom styling */
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSI2IiB2aWV3Qm94PSIwIDAgMTAgNiI+PHBhdGggZD0iTTAgMGw1IDUgNSA1VjBIMFYwWiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg=='); /* Adds a custom dropdown arrow */
-            background-repeat: no-repeat; /* Prevents the background image from repeating */
-            background-position: right 10px center; /* Positions the background image */
-            background-size: 10px; /* Sets the size of the background image */
-            padding-right: 30px; /* Adds right padding to make space for the arrow */
-        }
+      
 
         /* Class to hide elements */
         .hidden {
@@ -153,13 +147,14 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
       margin: auto;
     }
 
+
     </style>
-    </style>
+    <link rel="stylesheet" href="css/select.css">
 </head>
 <body>
       <div class="containerOuter">
     <div class="container">
-    <img src="images/thescoutowl.png" class="logo"> 
+    <a href="."><img src="images/thescoutowl.png" class="logo"> </a>
 
     <form id="scoutingForm">
         <label for="eventDropdown">Event:</label> 

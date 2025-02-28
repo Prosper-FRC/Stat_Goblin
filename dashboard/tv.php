@@ -48,31 +48,31 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
   <!-- Meta tags for proper character encoding and responsive design -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FRC Match Dashboard</title>
+  <title>Owl TV</title>
   <style>
     /* --- Font Faces --- */
     /* Define custom fonts using @font-face for use in the application */
-    @font-face {
-      font-family: 'Roboto';
-      src: url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
-           url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'Griffy';
-      src: url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
-           url('/../Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'Comfortaa';
-      src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-           url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
-      font-weight: normal;
-      font-style: normal;
-    }
+         @font-face {
+            font-family: 'Roboto';
+            src: url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Comfortaa';
+            src: url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
 
     /* --- Global Styles --- */
     /* Set base styles for the entire document */
@@ -120,7 +120,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
       width: 100%;
     }
     /* Styles for each dropdown select element */
-    .dropdowns select {
+    .dropdowns  {
       font-size: .8rem;
       border: 1px solid #555;
       border-radius: 4px;
@@ -348,25 +348,10 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
 
     /* --- Custom Select Styling --- */
     /* Custom styling for dropdown select elements */
-    select {
-      font-size: 1.1rem; /* Increase font size for readability */
-      padding: 12px;     /* Add padding for touch-friendly areas */
-      border: 1px solid #fff; /* White border */
-      background-color: #222; /* Match dashboard theme */
-      color: #fff;       /* White text */
-      border-radius: 5px; /* Rounded corners */
-      appearance: none;  /* Remove default styling */
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      position: relative;
-      /* Add a custom dropdown arrow using a base64 encoded SVG */
-      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSI2IiB2aWV3Qm94PSIwIDAgMTAgNiI+PHBhdGggZD0iTTAgMGw1IDUgNSA1VjBIMFYwWiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==');
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      background-size: 10px;
-      padding-right: 30px; /* Extra space for the arrow */
-    }
+ 
+
   </style>
+      <link rel="stylesheet" href="../css/select.css">
 </head>
 <body>
   <div class="containerOuter">
@@ -374,17 +359,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
       <!-- Header Card -->
       <div class="card header-card">
         <div class="dropdowns">
-          <!-- Dropdown for sorting robot cards -->
-          <div>
-            <label for="sortOption"><strong>Sort by:</strong></label><br>
-            <select id="sortOption" onchange="updateRobotCards()">
-              <option value="alliance" selected>Alliance</option>
-              <option value="offense_score">Offense Score</option>
-              <option value="defense_score">Defense Score</option>
-              <option value="cooperative_score">Cooperative Score</option>
-              <option value="robot">Robot</option> <!-- New sort option -->
-            </select>
-          </div>
+
 
           <!-- Dropdowns for selecting alliance robots -->
           <div>
@@ -427,6 +402,21 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
               <option>blue 3</option>
             </select>
           </div>
+
+
+          <!-- Dropdown for sorting robot cards -->
+          <div>
+            <label for="sortOption"><strong>Sort by:</strong></label><br>
+            <select id="sortOption" onchange="updateRobotCards()">
+       
+              <option value="offense_score" selected>Offense Score</option>
+              <option value="defense_score">Defense Score</option>
+              <option value="cooperative_score">Cooperative Score</option>
+              <option value="robot">Robot</option> <!-- New sort option -->
+            </select>
+          </div>
+
+          
         </div>
       </div>
       <!-- Robot Cards Container -->
@@ -579,7 +569,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
       // Start with a header/logo card and a prediction card
       let html = `
         <div class="robot-card logoCard" id="card_2">
-          <img class="logo" src="../images/owlanalytics.png" alt="Logo">
+        <a href="..">  <img class="logo" src="../images/owlanalytics.png" alt="Logo"></a>
         </div>
         <div id="predictionCard" class="card robot-card prediction-card">
           <h3>Match Prediction</h3>

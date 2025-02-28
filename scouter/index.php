@@ -34,24 +34,24 @@
         
     
         <style>
-            @font-face {
+         @font-face {
             font-family: 'Roboto';
-            src: url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
-            url('/../Stat_Goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Griffy';
-            src: url('/Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
-            url('/Stat_Goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
             @font-face {
             font-family: 'Comfortaa';
-            src: url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf'),
-            url('/../Stat_Goblin/fonts/Comfortaa/Comfortaa-Regular.ttf') format('ttf');
+            src: url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf');
             font-weight: normal;
             font-style: normal;
             }
@@ -327,6 +327,7 @@
             .auton:hover{background-color:#fff;}
             .auton.selected{background-color:#fff;}
         </style>
+        <link rel="stylesheet" href="../css/select.css">
     </head>
     <body>
         <div id="validator" style="display:none;">
@@ -342,7 +343,7 @@
             <div id="top">
                 <div id="logoAndScoreboard">
                     <div id="logoOuter">
-                        <img src="../images/thescoutowl.png" class="logo" alt="Logo">
+                       <a href="../scouter.php"> <img src="../images/thescoutowl.png" class="logo" alt="Logo"></a>
                         <h1 class="griffy">Reefscape Edition</h1>
                     </div>
                     <div id="scoreboardOuter">
