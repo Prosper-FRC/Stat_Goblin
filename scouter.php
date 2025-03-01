@@ -50,7 +50,7 @@ if ($row) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FRC Scouting</title>
+    <title>the Scout Owl</title>
     <style>
     <style>
         /* Responsive design: Adjust form gap for screens narrower than 330px */

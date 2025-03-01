@@ -295,9 +295,11 @@ try {
         <a href="..">
             <img src="../images/owladmin.png" class="logo" alt="Logo">
         </a>
+
+        <!--
         <h1>Admin Console</h1>
 
-        <!-- Generate New Code -->
+ 
         <h2>Generate New Code</h2>
         <form method="POST">
             <button type="submit" name="generate_code">Generate New Code</button>
@@ -307,6 +309,9 @@ try {
         <?php else: ?>
             <p>No active code found.</p>
         <?php endif; ?>
+
+-->
+
 
         <!-- Start a New Match -->
         <h2>Start a New Match</h2>

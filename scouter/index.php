@@ -28,7 +28,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>FRC Scouting App</title>
+        <title>the Scout Owl</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Load jQuery & Chart.js -->
         
