@@ -108,7 +108,7 @@ try {
     }
 
     // Fetch only active events 
-    $sql = "SELECT * FROM active_event LIMIT 1";
+    $sql = "SELECT distinct event_name FROM active_event";
     $activeEvents = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
     // Fetch the current active code
