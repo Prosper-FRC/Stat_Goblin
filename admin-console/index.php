@@ -131,6 +131,7 @@ try {
     <!-- Ensures responsive rendering on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owl Admin Console</title>
+     
     <style>
         /* Include custom fonts if you have them; otherwise, use fallbacks */
          @font-face {
@@ -290,6 +291,7 @@ try {
     <link rel="stylesheet" href="../css/select.css">
 </head>
 <body>
+
 <div class="containerOuter">
     <div class="container">
         <a href="..">

@@ -49,6 +49,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Owl TV</title>
+ 
   <style>
     /* --- Font Faces --- */
     /* Define custom fonts using @font-face for use in the application */
@@ -362,28 +363,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
 
 
           <!-- Dropdowns for selecting alliance robots -->
-          <div>
-            <label for="red1"><strong>Red 1:</strong></label><br>
-            <select id="red1">
-              <option></option>
-            </select>
-          </div>
-          <div>
-            <label for="red2"><strong>Red 2:</strong></label><br>
-            <select id="red2">
-              <option>red 2</option>
-            </select>
-          </div>
-          <div>
-            <label for="blue3"><strong>Red 3:</strong></label><br>
-            <select id="red3">
-              <option>red 3</option>
-            </select>
-          </div>
-          <div>
-            <!-- VS image between alliances -->
-            <img class="vsImg" src="../images/vs.png" alt="vs">
-          </div>
+
           <div>
             <label for="blue1"><strong>Blue 1:</strong></label><br>
             <select id="blue1">
@@ -404,6 +384,34 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
           </div>
 
 
+          
+
+
+          <div>
+            <!-- VS image between alliances -->
+            <img class="vsImg" src="../images/vs.png" alt="vs">
+          </div>
+
+          
+          <div>
+            <label for="red1"><strong>Red 1:</strong></label><br>
+            <select id="red1">
+              <option></option>
+            </select>
+          </div>
+          <div>
+            <label for="red2"><strong>Red 2:</strong></label><br>
+            <select id="red2">
+              <option>red 2</option>
+            </select>
+          </div>
+          <div>
+            <label for="blue3"><strong>Red 3:</strong></label><br>
+            <select id="red3">
+              <option>red 3</option>
+            </select>
+          </div>
+
           <!-- Dropdown for sorting robot cards -->
           <div>
             <label for="sortOption"><strong>Sort by:</strong></label><br>
@@ -416,7 +424,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
             </select>
           </div>
 
-          
+
         </div>
       </div>
       <!-- Robot Cards Container -->
