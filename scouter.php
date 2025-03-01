@@ -1,20 +1,49 @@
 <?php
-// Include the database connection file. This file likely contains the code to connect to your database.
+
+// 1) Include DB connection.
 include 'php/database_connection.php';
 
-// Fetch distinct event names from the 'active_event' table in your database.
-// This assumes you have a table named 'active_event' with a column named 'event_name'.
+// 2) Get distinct event names from active_event.
 $eventQuery = "SELECT DISTINCT event_name FROM active_event"; 
-
-// Prepare the SQL query for execution. This helps prevent SQL injection vulnerabilities.
 $eventStmt = $pdo->prepare($eventQuery);
-
-// Execute the prepared query.
 $eventStmt->execute();
+$events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all the results from the query and store them in an array called $events.
-// PDO::FETCH_ASSOC tells PDO to return the results as an associative array (key-value pairs).
-$events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
+// 3) Get last event + next match.
+$activeventQuery = "
+    SELECT 
+        event_name,
+        match_no + 1 AS match_number
+    FROM scouting_submissions
+    WHERE event_name = (
+        SELECT event_name 
+        FROM scouting_submissions 
+        ORDER BY id DESC 
+        LIMIT 1
+    )
+    ORDER BY match_no DESC 
+    LIMIT 1
+";
+$activeventStmt = $pdo->prepare($activeventQuery);
+$activeventStmt->execute();
+
+// Option A: fetch() since we're only expecting one row
+$row = $activeventStmt->fetch(PDO::FETCH_ASSOC);
+if ($row) {
+    $activeEventName = $row['event_name'];
+    $activeMatch     = $row['match_number'];
+
+    // Do something with $activeEventName and $activeMatch...
+
+    //echo "Next Match: $activeMatch<br>";
+} else {
+    // If there's no row returned, handle the case
+    //echo "No row found for the last event!";
+}
+
+
+?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -153,6 +182,10 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
 </head>
 <body>
       <div class="containerOuter">
+       <!-- <?php
+            echo "Event Name: $activeEventName<br>"; 
+            echo "Next Match: $activeMatch<br>";
+       ?>-->
     <div class="container">
     <a href="."><img src="images/thescoutowl.png" class="logo"> </a>
 
@@ -183,108 +216,139 @@ $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);?>
     <script src="js/jquery-3.7.1.min.js"></script> 
 
     <script>
-        $(document).ready(function() {
-            // Fetch match numbers based on selected event
-            $('#eventDropdown').change(function() { // When the event dropdown value changes
-                var eventName = $(this).val(); // Get the selected event name
-                if (eventName) { // If an event is selected
-                    console.log('Selected Event:', eventName); // Log the selected event to the console
-                    $.ajax({ // Make an AJAX request to php/fetch_data.php
-                        type: 'POST', // Use the POST method
-                        url: 'php/fetch_data.php', // Send the request to this file
-                        data: { event: eventName, action: 'fetchMatches' }, // Send the event name and action to the server
-                        success: function(response) { // If the request is successful
-                            console.log('AJAX Response for fetchMatches:', response); // Log the response to the console
-                            $('#matchNumberDropdown').html(response); // Update the match number dropdown with the response
-                            $('#robotDropdown').html('<option value="">Select Robot</option>'); // Reset the robot dropdown
-                            $('#allianceDisplay').val(''); // Reset the alliance display
-                        },
-                        error: function(xhr, status, error) { // If the request fails
-                            console.error('AJAX Error in fetchMatches:', status, error); // Log the error to the console
-                        }
-                    });
-                } else { // If no event is selected
-                    $('#matchNumberDropdown').html('<option value="">Select Match Number</option>'); // Reset the match number dropdown
-                    $('#robotDropdown').html('<option value="">Select Robot</option>'); // Reset the robot dropdown
-                    $('#allianceDisplay').val(''); // Reset the alliance display
+       $(document).ready(function() {
+
+    // 1) Keep a reference to these values
+    let activeEventName = "<?php echo $activeEventName; ?>";
+    let activeMatch     = "<?php echo $activeMatch; ?>";
+
+    // 2) On change for #eventDropdown
+    $('#eventDropdown').change(function() {
+        var eventName = $(this).val();
+
+        if (eventName) {
+            console.log('Selected Event:', eventName);
+            $.ajax({
+                type: 'POST',
+                url: 'php/fetch_data.php',
+                data: {
+                    event: eventName,
+                    action: 'fetchMatches'
+                },
+                success: function(response) {
+                    console.log('AJAX Response for fetchMatches:', response);
+                    $('#matchNumberDropdown').html(response);  // Populate matchNumberDropdown
+                    $('#robotDropdown').html('<option value="">Select Robot</option>');
+                    $('#allianceDisplay').val('');
+
+                    // ***** Now that matchNumberDropdown is populated, set it here! *****
+                    if (activeMatch) {
+                        $('#matchNumberDropdown').val(activeMatch).trigger('change');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error in fetchMatches:', status, error);
                 }
             });
+        } else {
+            $('#matchNumberDropdown').html('<option value="">Select Match Number</option>');
+            $('#robotDropdown').html('<option value="">Select Robot</option>');
+            $('#allianceDisplay').val('');
+        }
+    });
 
-            // Fetch robots based on selected match number
-            $('#matchNumberDropdown').change(function() { // When the match number dropdown value changes
-                var eventName = $('#eventDropdown').val(); // Get the selected event name
-                var matchNumber = $(this).val(); // Get the selected match number
-                if (eventName && matchNumber) { // If both event and match number are selected
-                    console.log('Selected Event:', eventName); // Log the selected event to the console
-                    console.log('Selected Match Number:', matchNumber); // Log the selected match number to the console
-                    $.ajax({ // Make an AJAX request to php/fetch_data.php
-                        type: 'POST', // Use the POST method
-                        url: 'php/fetch_data.php', // Send the request to this file
-                        data: { event: eventName, match_number: matchNumber, action: 'fetchRobots' }, // Send the event name, match number, and action to the server
-                        success: function(response) { // If the request is successful
-                            console.log('AJAX Response for fetchRobots:', response); // Log the response to the console
-                            $('#robotDropdown').html(response); // Update the robot dropdown with the response
-                            $('#allianceDisplay').val(''); // Reset the alliance display
-                        },
-                        error: function(xhr, status, error) { // If the request fails
-                            console.error('AJAX Error in fetchRobots:', status, error); // Log the error to the console
-                        }
-                    });
-                } else { // If either event or match number is not selected
-                    $('#robotDropdown').html('<option value="">Select Robot</option>'); // Reset the robot dropdown
-                    $('#allianceDisplay').val(''); // Reset the alliance display
+    // 3) On change for #matchNumberDropdown
+    $('#matchNumberDropdown').change(function() {
+        var eventName   = $('#eventDropdown').val();
+        var matchNumber = $(this).val();
+
+        if (eventName && matchNumber) {
+            console.log('Selected Event:', eventName);
+            console.log('Selected Match Number:', matchNumber);
+            $.ajax({
+                type: 'POST',
+                url: 'php/fetch_data.php',
+                data: {
+                    event: eventName,
+                    match_number: matchNumber,
+                    action: 'fetchRobots'
+                },
+                success: function(response) {
+                    console.log('AJAX Response for fetchRobots:', response);
+                    $('#robotDropdown').html(response);
+                    $('#allianceDisplay').val('');
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error in fetchRobots:', status, error);
                 }
             });
+        } else {
+            $('#robotDropdown').html('<option value="">Select Robot</option>');
+            $('#allianceDisplay').val('');
+        }
+    });
 
-            // Fetch alliance based on selected robot
-            $('#robotDropdown').change(function() { // When the robot dropdown value changes
-                var eventName = $('#eventDropdown').val(); // Get the selected event name
-                var matchNumber = $('#matchNumberDropdown').val(); // Get the selected match number
-                var robot = $(this).val(); // Get the selected robot
-                if (eventName && matchNumber && robot) { // If event, match number, and robot are selected
-                    console.log('Selected Event:', eventName); // Log the selected event to the console
-                    console.log('Selected Match Number:', matchNumber); // Log the selected match number to the console
-                    console.log('Selected Robot:', robot); // Log the selected robot to the console
-                    $.ajax({ // Make an AJAX request to php/fetch_data.php
-                        type: 'POST', // Use the POST method
-                        url: 'php/fetch_data.php', // Send the request to this file
-                        data: { event: eventName, match_number: matchNumber, robot: robot, action: 'fetchAlliance' }, // Send the event name, match number, robot, and action to the server
-                        success: function(response) { // If the request is successful
-                            console.log('AJAX Response for fetchAlliance:', response); // Log the response to the console
-                            $('#allianceDisplay').val(response); // Update the alliance display with the response
+    // 4) On change for #robotDropdown
+    $('#robotDropdown').change(function() {
+        var eventName   = $('#eventDropdown').val();
+        var matchNumber = $('#matchNumberDropdown').val();
+        var robot       = $(this).val();
 
-                            // Update robot dropdown background color based on alliance
-                            if(response=='Red') { 
-                                $('#robotDropdown').css('background-color', '#C0392B'); // Set background color to red if alliance is Red
-                            } else {
-                                $('#robotDropdown').css('background-color', '#2C3E50'); // Set background color to blue if alliance is Blue
-                            }
-                        },
-                        error: function(xhr, status, error) { // If the request fails
-                            console.error('AJAX Error in fetchAlliance:', status, error); // Log the error to the console
-                        }
-                    });
-                } else { // If either event, match number, or robot is not selected
-                    $('#allianceDisplay').val(''); // Reset the alliance display
+        if (eventName && matchNumber && robot) {
+            console.log('Selected Robot:', robot);
+            $.ajax({
+                type: 'POST',
+                url: 'php/fetch_data.php',
+                data: {
+                    event: eventName,
+                    match_number: matchNumber,
+                    robot: robot,
+                    action: 'fetchAlliance'
+                },
+                success: function(response) {
+                    console.log('AJAX Response for fetchAlliance:', response);
+                    $('#allianceDisplay').val(response);
+
+                    if (response == 'Red') {
+                        $('#robotDropdown').css('background-color', '#C0392B');
+                    } else {
+                        $('#robotDropdown').css('background-color', '#2C3E50');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error in fetchAlliance:', status, error);
                 }
             });
+        } else {
+            $('#allianceDisplay').val('');
+        }
+    });
 
-            // Handle form submission
-            $('#submitForm').click(function() { // When the submit button is clicked
-                var event = $('#eventDropdown').val(); // Get the selected event name
-                var matchNumber = $('#matchNumberDropdown').val(); // Get the selected match number
-                var robot = $('#robotDropdown').val(); // Get the selected robot
-                var alliance = $('#allianceDisplay').val(); // Get the alliance
-                console.log('Form Data:', { event: event, matchNumber: matchNumber, robot: robot, alliance: alliance }); // Log the form data to the console
+    // 5) On form submit
+    $('#submitForm').click(function() {
+        var event       = $('#eventDropdown').val();
+        var matchNumber = $('#matchNumberDropdown').val();
+        var robot       = $('#robotDropdown').val();
+        var alliance    = $('#allianceDisplay').val();
 
-                if (event && matchNumber && robot && alliance) { // If all fields are filled
-                    // Redirect to scouter/index.php with selected data as URL parameters
-                    window.location.href = `scouter/index.php?event=${encodeURIComponent(event)}&match=${encodeURIComponent(matchNumber)}&robot=${encodeURIComponent(robot)}&alliance=${encodeURIComponent(alliance)}`; 
-                } else {
-                    alert('Please fill all fields.'); // Show an alert if any field is missing
-                }
-            });
-        });
+        if (event && matchNumber && robot && alliance) {
+            window.location.href = `scouter/index.php?event=${encodeURIComponent(event)}&match=${encodeURIComponent(matchNumber)}&robot=${encodeURIComponent(robot)}&alliance=${encodeURIComponent(alliance)}`; 
+        } else {
+            alert('Please fill all fields.');
+        }
+    });
+
+    // 6) Finally: set the #eventDropdown if we have activeEventName
+    //    That will trigger the .change(), which will fetch the matches, 
+    //    which will then (in success callback) set #matchNumberDropdown.
+    if (activeEventName) {
+        $('#eventDropdown').val(activeEventName).trigger('change');
+    }
+
+});
+
+
+
     </script>
 </div>
 </div>
