@@ -18,7 +18,9 @@ try {
     $pdo->exec("
         CREATE TEMPORARY TABLE IF NOT EXISTS temp_robot_categories (
             robot INT PRIMARY KEY,
-            offense_score INT DEFAULT 0,
+            starting_position VARCHAR(30),
+            auton_path VARCHAR(30),
+            offense_score DECIMAL(5,2) DEFAULT 0,
             defense_score INT DEFAULT 0,
             auton_score INT DEFAULT 0,
             cooperative_score DECIMAL(5,2) DEFAULT 0,
@@ -51,12 +53,21 @@ try {
     $pdo->exec("
         UPDATE temp_robot_categories rc
         JOIN (
-            SELECT robot, COUNT(*) AS offense_score
-            FROM scouting_submissions
-            WHERE event_name = '$event_name'
-              AND action IN ('scores_coral_level_1', 'scores_coral_level_2', 'scores_coral_level_3', 'scores_coral_level_4', 'scores_algae_net', 'scores_algae_processor')
-              AND result = 'success'
-            GROUP BY robot
+
+
+
+ SELECT robot, AVG(offense_score) AS offense_score
+         FROM (
+             SELECT robot, match_no, SUM(points) AS offense_score
+             FROM scouting_submissions
+             WHERE event_name = '$event_name'
+             GROUP BY robot, match_no
+         ) AS ff
+         GROUP BY robot
+
+
+
+
         ) AS offense_data ON rc.robot = offense_data.robot
         SET rc.offense_score = offense_data.offense_score
     ");
@@ -228,7 +239,70 @@ try {
         SET rc.match_count = match_data.match_count
     ");
 
-    // Step 10: Fetch Final Data
+
+ // Step 10: Fetch auton
+
+
+$pdo->exec("
+    UPDATE temp_robot_categories rc
+    JOIN (
+        SELECT 
+            robot,
+            MAX(starting_position) AS starting_position,
+            MAX(auton_path) AS auton_path
+        FROM (
+            SELECT 
+                robot,
+                CASE WHEN action LIKE 's%' THEN action ELSE NULL END AS starting_position,
+                CASE WHEN action LIKE 'a%' THEN action ELSE NULL END AS auton_path,
+                rnk
+            FROM (
+                SELECT 
+                    robot,
+                    action,
+                    volume,
+                    max_match,
+                    RANK() OVER (
+                        PARTITION BY robot, CASE WHEN action LIKE 's%' THEN 's' ELSE 'a' END
+                        ORDER BY volume DESC, max_match DESC
+                    ) AS rnk
+                FROM (
+                    SELECT 
+                        ss.robot,
+                        ss.action,
+                        COUNT(ss.result) AS volume,
+                        MAX(ss.match_no) AS max_match
+                    FROM scouting_submissions ss
+                    INNER JOIN (
+                        SELECT event_name 
+                        FROM scouting_submissions 
+                        ORDER BY id DESC 
+                        LIMIT 1
+                    ) ev ON ss.event_name = ev.event_name
+                    AND ss.action IN (
+                        'starting_position_1',
+                        'starting_position_2',
+                        'starting_position_3',
+                        'auton_left',
+                        'auton_center',
+                        'auton_right'
+                    )
+                    GROUP BY ss.robot, ss.action
+                ) AS t
+            ) AS b
+            WHERE rnk = 1
+        ) AS c
+        GROUP BY robot
+    ) AS subquery ON rc.robot = subquery.robot
+    SET 
+        rc.starting_position = subquery.starting_position,
+        rc.auton_path = subquery.auton_path
+");
+
+
+
+
+    // Step 11: Fetch Final Data
     $robot_query = $pdo->query("
         SELECT rc.*, 'n/a' as alliance
         FROM temp_robot_categories rc

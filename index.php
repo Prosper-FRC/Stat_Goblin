@@ -84,7 +84,8 @@
   <body>
     <div class="containerOuter">
       <div class="container">
-        <img src="images/theStatOwl.png" class="logo" alt="Logo">
+     
+        <img src="images/theStatOwl.png" class="logo" alt="Logo" onclick="">
         <!-- 2x2 Grid for Dropdowns -->
         <div class="grid-container">
           <div class="grid-item">
@@ -97,7 +98,7 @@
           </div>
           <div class="grid-item">
             <label for="eventDropdown"><strong>Owl Tv:</strong></label>
-            <a href ="dashboard/tv.php"><img class="icon" src="icons/tv.png" alt="Admin Console"></a>
+            <a href ="dashboard/tv.php"><img class="icon" src="icons/tv.png" alt="Admin Console" ></a>
           </div>
           <div class="grid-item">
             <label for="eventDropdown"><strong>Owl Analytics:</strong></label>
@@ -111,4 +112,9 @@
       </div>
     </div>
   </body>
+  <script>
+
+   
+
+  </script>
 </html>

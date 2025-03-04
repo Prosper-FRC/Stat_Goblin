@@ -87,6 +87,28 @@
       box-sizing: border-box;
     }
     
+  .grid-container_stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    /* Optional: add some padding to the container */
+    padding: 1rem;
+  }
+  .grid-item_stats {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    text-align: center;
+    /* Optional: ensure all boxes are the same height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+
+
+
+
     /* Card styling */
     .card {
       background: #fff;
@@ -549,12 +571,32 @@ if(matchNumber !=="all"){
               <div class="robot-details">
                 <h3>Robot ${robot.robot}</h3>
                 <p><strong>Alliance:</strong> ${robot.alliance}</p>
-                <p>Matches Played: ${robot.match_count || "N/A"}</p>
-                <p>Top Scoring Location: ${robot.top_scoring_location || "N/A"}</p>
-                <p>Offense Score: ${robot.offense_score || 0}</p>
-                <p>Defense Score: ${robot.defense_score || 0}</p>
-                <p>Auton Score: ${robot.auton_score || 0}</p>
-                <p>Cooperative Score: ${parseFloat(robot.cooperative_score || 0).toFixed(2)}</p>
+                <div class="grid-container_stats">
+  <div class="grid-item_stats">
+    <p>Matches Played: ${robot.match_count || "N/A"}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Favorite Starting Position: ${robot.starting_position || "N/A"}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Auton Path: ${robot.auton_path || "N/A"}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Top Scoring Location: ${robot.top_scoring_location || "N/A"}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Average Offense: ${robot.offense_score || 0}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Defense Score: ${robot.defense_score || 0}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Auton Score: ${robot.auton_score || 0}</p>
+  </div>
+  <div class="grid-item_stats">
+    <p>Cooperative Score: ${parseFloat(robot.cooperative_score || 0).toFixed(2)}</p>
+  </div>
+</div>
               </div>
               <div class="robot-chart">
                 <canvas id="chart_${robot.robot}"></canvas>

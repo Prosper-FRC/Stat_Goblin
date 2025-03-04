@@ -181,16 +181,16 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
     }
     /* --- Views Container --- */
     /* Container for different views (stat cards, performance charts, etc.) inside a robot card */
-    .robot-card .view {
-      position: absolute;
-      top: 3rem; /* Leave space for the top row */
-      left: 0;
-      width: 100%;
-      height: calc(100% - 3rem);
-      transition: transform 0.5s ease, opacity 0.5s ease; /* Smooth transition for view changes */
-      opacity: 0; /* Start hidden */
-      z-index: 1;
-    }
+.robot-card .view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+  z-index: 1;
+}
     /* Active view is fully visible */
     .robot-card .view.active {
       transform: translateX(0);
@@ -203,34 +203,64 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
     }
     /* --- Stat Cards (View 1) --- */
     /* Grid layout for stat cards inside the robot card */
-    .stat-cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      box-sizing: border-box;
-      height: 100%;
-    }
-    /* Individual stat card style */
-    .stat-card {
-      width: 100%;
-      height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      text-align: center;
-      box-sizing: border-box;
-    }
-    /* Color coding for different stat cards */
-    .stat-card.matches { background-color: rgba(20,96,61,0.6); border-color: rgb(20,96,61); }
-    .stat-card.location { background-color: rgba(20,55,96,0.6); border-color: rgb(20,55,96); }
-    .stat-card.offense { background-color: rgba(96,20,55,0.6); border-color: rgb(96,20,55); }
-    .stat-card.defense { background-color: rgba(96,61,20,0.6); border-color: rgb(96,61,20); }
-    .stat-card.auton { background-color: rgba(96,23,20,0.6); border-color: rgb(96,23,20); }
-    .stat-card.coop { background-color: rgba(33,91,159,0.6); border-color: rgb(33,91,159); }
+ .stat-cards {
+  display: grid;
+  /* Exactly 2 columns and 4 rows, for 8 total cells */
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(4, 4rem);
+  gap: 0.5rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.stat-cards {
+  display: grid;
+  /* 3 columns and 3 rows, forcing 9 cells */
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.2rem;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+
+.stat-card p,
+.stat-card h1, .stat-card h2, .stat-card h3, .stat-card h4, .stat-card h5, .stat-card h6 {
+  margin: 0;
+  padding: 0;
+}
+
+
+.stat-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: auto;      /* Allows overflow if needed, or use 'visible' */
+  white-space: normal; /* Allows text to wrap */
+  /* Remove text-overflow: ellipsis if not needed */
+}
+/* Example color classes (adjust as needed) */
+.stat-card.robot        { background-color: rgba(96,20,55,0.6);   border-color: rgb(96,20,55); }
+.stat-card.matches      { background-color: rgba(20,96,61,0.6);   border-color: rgb(20,96,61); }
+.stat-card.starting     { background-color: rgba(33,91,159,0.6);  border-color: rgb(33,91,159); }
+.stat-card.auton_path   { background-color: rgba(96,23,20,0.6);   border-color: rgb(96,23,20); }
+.stat-card.location     { background-color: rgba(20,55,96,0.6);   border-color: rgb(20,55,96); }
+.stat-card.offense      { background-color: rgba(96,20,55,0.6);   border-color: rgb(96,20,55); }
+.stat-card.defense      { background-color: rgba(96,61,20,0.6);   border-color: rgb(96,61,20); }
+.stat-card.auton_score  { background-color: rgba(96,23,20,0.6);   border-color: rgb(96,23,20); }
+.stat-card.coop         { background-color: rgba(33,91,159,0.6);  border-color: rgb(33,91,159); }
+
+
+
     /* --- Performance Chart (View 2) --- */
     /* Container for the performance chart */
     .performance-chart {
@@ -589,17 +619,18 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
       robots.forEach(robot => {
         html += `
           <div class="robot-card">
-            <div class="top-row">
-              <div class="robot-name">Robot ${robot.robot}</div>
-            </div>
+   
             <!-- View 1: Stat Cards -->
             <div class="view stat-cards active">
-              <div class="stat-card matches">Matches: ${robot.match_count || "N/A"}</div>
-              <div class="stat-card location">Location: ${formatLocation(robot.top_scoring_location)}</div>
-              <div class="stat-card offense">Offense: ${robot.offense_score || 0}</div>
-              <div class="stat-card defense">Defense: ${robot.defense_score || 0}</div>
-              <div class="stat-card auton">Auton: ${robot.auton_score || 0}</div>
-              <div class="stat-card coop">Co-op: ${parseFloat(robot.cooperative_score || 0).toFixed(2)}</div>
+          <div class="stat-card robot">Robot <br> ${robot.robot}</div>
+              <div class="stat-card matches">Matches Played<br> ${robot.match_count || "N/A"}</div>
+          <div class="stat-card starting">Start Position<br> ${(robot.starting_position || "N/A").replace("starting_position_", "")}</div>
+          <div class="stat-card auton_path">Auton Path<br> ${(robot.auton_path || "N/A").replace("auton_", "")}</div>
+              <div class="stat-card location">Scoring ${formatLocation(robot.top_scoring_location).replace("Scores", "")}</div>
+              <div class="stat-card offense">Offense<br> ${robot.offense_score || 0}</div>
+              <div class="stat-card defense">Defense<br> ${robot.defense_score || 0}</div>
+              <div class="stat-card auton_score">Auton<br> ${robot.auton_score || 0}</div>
+              <div class="stat-card coop">Co-op<br> ${parseFloat(robot.cooperative_score || 0).toFixed(2)}</div>
             </div>
             <!-- View 2: Performance Chart -->
             <div class="view performance-chart">
@@ -607,6 +638,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <!-- View 3: Scoring Breakdown -->
             <div class="view scoring-breakdown">
+          <h3>Scoring Table</h3>
               <table class="scoring-table">
                 <thead>
                   <tr>
@@ -728,10 +760,10 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
         // Initialize each view's position and opacity
         views.forEach((view, idx) => {
           view.style.position = "absolute";
-          view.style.top = "3rem"; // leave room for the top row
+          view.style.top = "0rem"; // leave room for the top row
           view.style.left = "0";
           view.style.width = "100%";
-          view.style.height = "calc(100% - 3rem)";
+          view.style.height = "calc(100% - 0rem)";
           view.style.transition = "transform 0.5s ease, opacity 0.5s ease";
           // First view is visible; others start off-screen to the right
           view.style.transform = (idx === 0) ? "translateX(0)" : "translateX(100%)";

@@ -281,12 +281,20 @@
                    timerElement.textContent = "Paused";
                    return;
                }
-            
-               const remainingSeconds = Math.max(150 - elapsedSeconds, 0);
+           
+               if (elapsedSeconds > 15 && elapsedSeconds < 18){
+                navigator.vibrate([20, 10, 20, 10, 50])
+
+               }
+
+            const remainingSeconds = Math.max(150 - elapsedSeconds, 0);
             timerTime=remainingSeconds
             
                if (remainingSeconds === 0) {
                    timerElement.textContent = "Finished";
+                   // Call the function to start the song
+//playVibrationSong();
+
                    return;
                }
             
@@ -297,6 +305,8 @@
             
             // Poll match data and update the timer every 1/4second
             setInterval(async () => {
+
+
                 fetchMatchData();
                updateMatchTimer();
             }, 250);
@@ -467,3 +477,14 @@ blockElement.addEventListener('touchend', (e) => {
         document.getElementById('statusDisplay').textContent = 'Swipe to Submit';
     }
 });
+
+
+
+
+
+function playVibrationSong(){
+
+
+
+
+}
