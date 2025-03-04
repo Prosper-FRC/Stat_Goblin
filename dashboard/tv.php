@@ -590,7 +590,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
     // HELPER FUNCTION: FORMAT LOCATION
     // -----------------------------
     // Formats a location string by replacing underscores with spaces and capitalizing the first letter.
-    function formatLocation(str) {
+    function formatString(str) {
       if (!str) return "N/A";
       str = str.replace(/_/g, " ");
       return str.charAt(0).toUpperCase() + str.slice(1);
@@ -626,7 +626,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
               <div class="stat-card matches">Matches Played<br> ${robot.match_count || "N/A"}</div>
           <div class="stat-card starting">Start Position<br> ${(robot.starting_position || "N/A").replace("starting_position_", "")}</div>
           <div class="stat-card auton_path">Auton Path<br> ${(robot.auton_path || "N/A").replace("auton_", "")}</div>
-              <div class="stat-card location">Scoring ${formatLocation(robot.top_scoring_location).replace("Scores", "")}</div>
+              <div class="stat-card location">Scoring ${formatString(robot.top_scoring_location).replace("Scores", "")}</div>
               <div class="stat-card offense">Offense<br> ${robot.offense_score || 0}</div>
               <div class="stat-card defense">Defense<br> ${robot.defense_score || 0}</div>
               <div class="stat-card auton_score">Auton<br> ${robot.auton_score || 0}</div>

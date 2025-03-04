@@ -1,4 +1,28 @@
-
+<?php
+    // Database connection details
+    // Include the database connection
+    require_once '../php/database_connection.php'; // Adjust the path based on your directory structure
+    try {
+        // Create a PDO instance to connect to the database
+        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+        // Fetch the active code from the `codes` table
+        $sql = "SELECT code FROM codes WHERE is_active = 1 LIMIT 1";
+        $stmt = $pdo->query($sql);
+        $activeCode = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        if ($activeCode) {
+            $activeCode = $activeCode['code'];
+        } else {
+            $activeCode = ''; // If no active code, set it to empty
+        }
+    
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+        exit;
+    }
+    ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -302,16 +326,19 @@
             }
             .auton:hover{background-color:#fff;}
             .auton.selected{background-color:#fff;}
-
-
-#offlineSubmissions{display:none}
-
-
         </style>
         <link rel="stylesheet" href="../css/select.css">
     </head>
     <body>
-
+        <div id="validator" style="display:none;">
+            <h3>Please enter the active code to access the scouting remote:</h3>
+            <div class="input-container">
+                <input type="text" class="input-box" id="input1" maxlength="1" oninput="moveFocus(1)">
+                <input type="text" class="input-box" id="input2" maxlength="1" oninput="moveFocus(2)">
+                <input type="text" class="input-box" id="input3" maxlength="1" oninput="moveFocus(3)">
+                <input type="text" class="input-box" id="input4" maxlength="1" oninput="moveFocus(4)">
+            </div>
+        </div>
         <div id="block">
             <div id="top">
                 <div id="logoAndScoreboard">
@@ -424,35 +451,7 @@
                     </div>
                 </div>
             </div>
-            <script src="../js/wing_man.js" type="text/javascript"></script>
-
-
-
-
-<table id="offlineSubmissions" border="1">
-  <thead>
-    <tr>
-      <th>Event</th>
-      <th>Match</th>
-      <th>Time</th>
-      <th>Robot</th>
-      <th>Alliance</th>
-      <th>Action</th>
-      <th>Location</th>
-      <th>Result</th>
-      <th>Points</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Offline entries will be added here -->
-  </tbody>
-</table>
-
-
-</table>
-
-
-
+            <script src="../js/scouter_main.js" type="text/javascript"></script>
         </div>
     </body>
 </html>

@@ -576,7 +576,7 @@ if(matchNumber !=="all"){
     <p>Matches Played: ${robot.match_count || "N/A"}</p>
   </div>
   <div class="grid-item_stats">
-    <p>Favorite Starting Position: ${robot.starting_position || "N/A"}</p>
+    <p>Favorite Starting Position: ${formatString(robot.starting_position) || "N/A"}</p>
   </div>
   <div class="grid-item_stats">
     <p>Auton Path: ${robot.auton_path || "N/A"}</p>
@@ -711,6 +711,14 @@ fetchedRobots.forEach(robot => {
   });
 });
 
+    }
+
+
+
+        function formatString(str) {
+      if (!str) return "N/A";
+      str = str.replace(/_/g, " ");
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
     
     // Update prediction display using aggregated data from predict.php.
