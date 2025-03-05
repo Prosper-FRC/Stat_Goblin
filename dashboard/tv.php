@@ -419,7 +419,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
 
           <div>
             <!-- VS image between alliances -->
-            <img class="vsImg" src="../images/vs.png" alt="vs">
+            <img class="vsImg" src="../images/vs.png" alt="vs" onclick="cycleRobotCardViews('startStop')">
           </div>
 
           
@@ -472,7 +472,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
     let fetchedRobots = [];  // Array to store robot data fetched from the server
     let aggregatedData = {}; // Object to store prediction data
     let filterRobots = [];   // Array of robot IDs to exclude (for filtering)
-
+    let cycleCards = "true";
     // -----------------------------
     // FETCH MATCHES FUNCTION
     // -----------------------------
@@ -743,14 +743,27 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
       });
       
       // After building all cards, start the automatic cycling of views on each card
-      cycleRobotCardViews();
+      cycleRobotCardViews('start');
     }
     
     // -----------------------------
     // CYCLE ROBOT CARD VIEWS FUNCTION
     // -----------------------------
     // Automatically cycles through the different views (stat cards, chart, table) within each robot card.
-    function cycleRobotCardViews() {
+    function cycleRobotCardViews(startStop) {
+      if(startStop=='start'){
+        cycleCards = 'true';
+      }else{
+        if (cycleCards=='true') {
+
+          cycleCards='false';
+        } else{
+          cycleCards='true';
+        }
+
+      }
+
+                               
       const robotCards = document.querySelectorAll(".robot-card");
       robotCards.forEach(card => {
         const views = card.querySelectorAll(".view");
@@ -774,6 +787,12 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
         // Define a cycle function to change views automatically
         function cycle() {
           // Animate current view sliding out to the left
+if (cycleCards=='false'){
+
+return;
+}
+
+
           views[currentIndex].style.transform = "translateX(-100%)";
           views[currentIndex].style.opacity = "0";
           
@@ -792,7 +811,10 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
           
           // Set a random delay (between 4 and 10 seconds) before the next cycle
           const randomDelay = 4000 + Math.random() * 6000;
-          setTimeout(cycle, randomDelay);
+
+
+       setTimeout(cycle, randomDelay);
+
         }
         
         // Start the cycle with an initial random delay (between 6 and 14 seconds)
