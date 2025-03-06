@@ -266,14 +266,34 @@
             .shake {
             animation: shake 0.5s ease-in-out;
             }
-            @keyframes flash {
+            
+
+
+
+            @keyframes flashFailure {
            
             0%, 20%, 40%, 60%, 80%, 100% { background-color: #C0392B; }
-            10%, 30%, 50%, 70%, 90% { background-color: #2C3E50; }
+            10%, 30%, 50%, 70%, 90% { background-color: #000; }
             }
-            .flash {
-            animation: flash .8s ease-in-out;
+            .flashFailure {
+            animation: flashFailure .5s ease-in-out;
             }
+
+            @keyframes flashSuccess {
+           
+            0%, 20%, 40%, 60%, 80%, 100% { background-color: #006632; }
+            10%, 30%, 50%, 70%, 90% { background-color: #000; }
+            }
+            .flashSuccess {
+            animation: flashSuccess .5s ease-in-out;
+            }
+
+
+
+
+
+
+
             /* Center Hexagon */
             .hex{
             background-color: #CF4FB2; ;

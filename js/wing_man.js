@@ -399,17 +399,33 @@
                const result = success ? 'Success' : 'Failure';
                statusDisplay.textContent = result;
 
-
-                    document.getElementById('block').classList.add('flash'); // Add flash effect to the block container
+console.log(result);
+if(result=='Failure'){
+                    document.getElementById('block').classList.add('flashFailure'); // Add flash effect to the block container
                     document.getElementById('scoreboard').classList.add('shake');
                    
                       // Remove the flash class after 1 second to stop the flashing
                       setTimeout(() => {
-                          document.getElementById('block').classList.remove('flash');
+                          document.getElementById('block').classList.remove('flashFailure');
                           document.getElementById('scoreboard').classList.remove('shake');
-                      }, 500);
+                      }, 250);
+
+}else{
+
+document.getElementById('block').classList.add('flashSuccess'); // Add flash effect to the block container
+                    document.getElementById('scoreboard').classList.add('shake');
+                   
+                      // Remove the flash class after 1 second to stop the flashing
+                      setTimeout(() => {
+                          document.getElementById('block').classList.remove('flashSuccess');
+                          document.getElementById('scoreboard').classList.remove('shake');
+                      }, 250);
 
 
+
+
+
+}
 
 
 

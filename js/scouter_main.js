@@ -352,14 +352,14 @@
                const location = actionData ? actionData.location : 'Unknown';
            
 
-
+                    console.log('success');
                     document.getElementById('block').classList.add('flash'); // Add flash effect to the block container
             
                       // Remove the flash class after 1 second to stop the flashing
                       setTimeout(() => {
                           document.getElementById('block').classList.remove('flash');
                       }, 1000);
-alert("yo");
+
 
                // Calculate time into the match: 150 - (timerValue)
                timerValue = timerTime;
