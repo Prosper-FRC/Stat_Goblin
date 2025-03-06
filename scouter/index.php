@@ -166,13 +166,13 @@
             position: relative;
             }
             .button {
-          font-size: 1.5rem;
+          font-size: 1rem;
             text-align: center;
             background-color: #222;
             color: #fff;
             border-radius: 5px;
             border: 1px solid #fff;
-     padding:1rem;
+     padding:.5rem;
             cursor: pointer;
             transition: background-color 0.2s;
             }
@@ -267,11 +267,12 @@
             animation: shake 0.5s ease-in-out;
             }
             @keyframes flash {
-            0%, 20%, 40%, 60%, 80%, 100% { background-color: inherit; }
-            10%, 30%, 50%, 70%, 90% { background-color: #fff; }
+           
+            0%, 20%, 40%, 60%, 80%, 100% { background-color: #C0392B; }
+            10%, 30%, 50%, 70%, 90% { background-color: #2C3E50; }
             }
             .flash {
-            animation: flash 1s ease-in-out;
+            animation: flash .8s ease-in-out;
             }
             /* Center Hexagon */
             .hex{
@@ -291,7 +292,7 @@
 
             .button .iconSmall {
 
-            width: 2rem;        /* Set a width for the icon */
+            width: 1.5rem;        /* Set a width for the icon */
             height: auto;       /* Maintain aspect ratio */
             pointer-events: none; /* Ensures clicks go through to the button */
             }
@@ -426,7 +427,7 @@
             </div>
             <script src="../js/wing_man.js" type="text/javascript"></script>
 
-
+<script src="../js/canvas-confetti.js" type="text/javascript"></script>
 
 
 <table id="offlineSubmissions" border="1">

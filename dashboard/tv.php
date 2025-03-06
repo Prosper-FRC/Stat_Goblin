@@ -49,7 +49,7 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Owl TV</title>
- 
+ <script src="../js/canvas-confetti.js" type="text/javascript"></script>
   <style>
     /* --- Font Faces --- */
     /* Define custom fonts using @font-face for use in the application */
@@ -468,6 +468,30 @@ $events = $event_query->fetchAll(PDO::FETCH_ASSOC);
   <!-- Include Chart.js library for rendering performance charts -->
   <script src="../js/Chart.bundle.js"></script>
   <script>
+
+
+function throwCrazyConfetti() {
+    let count = 800;
+    let defaults = {
+        origin: { y: 0.4 }
+    };
+
+    function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio)
+        }));
+    }
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2, { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91 });
+    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92 });
+    fire(0.1, { spread: 140, startVelocity: 45 });
+}
+
+
+
+
     // Global variables to store data from API calls and filtering info
     let fetchedRobots = [];  // Array to store robot data fetched from the server
     let aggregatedData = {}; // Object to store prediction data
@@ -943,17 +967,20 @@ return;
     // CHECK IF ALL DROPDOWNS ARE FILLED FUNCTION
     // -----------------------------
     // Checks that all alliance dropdowns have a selected value before sending a prediction request.
-    function checkAllDropdownsFilled() {
-      const ids = ["blue1", "blue2", "blue3", "red1", "red2", "red3"];
-      // Verify that every dropdown has a non-empty trimmed value
-      const allFilled = ids.every(id => {
-        const el = document.getElementById(id);
-        return el && el.value.trim() !== "";
-      });
-      if (allFilled) {
-        sendPredictionRequest();
-      }
-    }
+let predictionRequested = false;
+
+function checkAllDropdownsFilled() {
+  const ids = ["blue1", "blue2", "blue3", "red1", "red2", "red3"];
+  const allFilled = ids.every(id => {
+    const el = document.getElementById(id);
+    return el && el.value.trim() !== "";
+  });
+  if (allFilled && !predictionRequested) {
+    predictionRequested = true;
+    sendPredictionRequest();
+  }
+}
+
 
     // Add event listeners to the alliance dropdowns to trigger check on change
     ["blue1", "blue2", "blue3", "red1", "red2", "red3"].forEach(id => {
@@ -1011,7 +1038,8 @@ return;
           if (aggregatedData.red_contributions && Array.isArray(aggregatedData.red_contributions)) {
             redContributions = aggregatedData.red_contributions;
           }
-
+          throwCrazyConfetti();
+          predictionRequested = false;
           // Build HTML content for the prediction card
           let headerHtml = `<strong><p>Blue Alliance Score:</strong> ${aggregatedData.blue_score}<br>`;
           headerHtml += '<table><th>Robot</th><th>Points</th>';
@@ -1035,16 +1063,22 @@ return;
           if (aggregatedData.predicted_winner.toLowerCase().includes("blue")) {
             headerEl.style.backgroundColor = 'rgba(33,91,159,1)';
             headerEl.style.color = '#fff';
+            
           } else if (aggregatedData.predicted_winner.toLowerCase().includes("red")) {
             headerEl.style.backgroundColor = 'rgba(96,20,55,1)';
             headerEl.style.color = '#fff';
+  
           } else {
             headerEl.style.backgroundColor = "#e2e3e5"; // Light gray for tie or other outcomes
             headerEl.style.color = '#000';
+
+             
           }
+
         })
         .catch(error => {
           console.error("Prediction fetch error:", error);
+          predictionRequested = false;
         });
     }
 

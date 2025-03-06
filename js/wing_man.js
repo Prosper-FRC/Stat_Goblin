@@ -125,7 +125,7 @@
             // Change the background color of #block based on alliance
             const blockElement = document.getElementById('block');
             
-           
+
             
             
             // Update alliance and opponent button colors
@@ -165,6 +165,27 @@
                });
             });
             
+            function throwCrazyConfetti() {
+    let count = 800;
+    let defaults = {
+        origin: { y: 0.7 }
+    };
+
+    function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio)
+        }));
+    }
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2, { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91 });
+    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92 });
+    fire(0.1, { spread: 140, startVelocity: 45 });
+}
+
+
+
             // Function to start the countdown timer
             function startTimer() {
             
@@ -292,6 +313,7 @@
             
                if (remainingSeconds === 0) {
                    timerElement.textContent = "Finished";
+                   throwCrazyConfetti();
                    // Call the function to start the song
 //playVibrationSong();
 
@@ -351,6 +373,9 @@
                const actionData = action ? actions[action.getAttribute('data-action')] : null;
                const location = actionData ? actionData.location : 'Unknown';
             
+
+
+
                // Calculate time into the match: 150 - (timerValue)
                timerValue = timerTime;
                const timeIntoMatch = 150 - timerValue;
@@ -373,7 +398,21 @@
                const statusDisplay = document.getElementById('statusDisplay');
                const result = success ? 'Success' : 'Failure';
                statusDisplay.textContent = result;
-            
+
+
+                    document.getElementById('block').classList.add('flash'); // Add flash effect to the block container
+                    document.getElementById('scoreboard').classList.add('shake');
+                   
+                      // Remove the flash class after 1 second to stop the flashing
+                      setTimeout(() => {
+                          document.getElementById('block').classList.remove('flash');
+                          document.getElementById('scoreboard').classList.remove('shake');
+                      }, 500);
+
+
+
+
+
                // Only alert if time is between 1 and 149 seconds
                if (timerValue > 0 && timerValue < 150) {
                    // Vibrate for 200ms on both success or failure
@@ -538,7 +577,7 @@ blockElement.addEventListener('touchmove', (e) => {
     }
 }, { passive: false });
 
-blockElement.addEventListener('touchend', (e) => {
+document.addEventListener('touchend', (e) => {
     if (!preventSwipeNav) return; // Only process swipe if horizontal movement was detected
 
     const endX = e.changedTouches[0].clientX;
@@ -546,6 +585,7 @@ blockElement.addEventListener('touchend', (e) => {
 
     if (diff > 200) {
         // Swiped right (Success)
+
         handleSwipe(true);
     } else if (diff < -200) {
         // Swiped left (Failure)

@@ -187,7 +187,7 @@
             
                   // Check if time into match is 14, and trigger the flash effect
                   const timeIntoMatch = 150 - timerValue;
-                  if (timeIntoMatch === 14) {
+                  if (timeIntoMatch == 14) {
                       blockElement.classList.add('flash'); // Add flash effect to the block container
             
                       // Remove the flash class after 1 second to stop the flashing
@@ -350,7 +350,17 @@
                const action = document.querySelector('.button.selected');
                const actionData = action ? actions[action.getAttribute('data-action')] : null;
                const location = actionData ? actionData.location : 'Unknown';
+           
+
+
+                    document.getElementById('block').classList.add('flash'); // Add flash effect to the block container
             
+                      // Remove the flash class after 1 second to stop the flashing
+                      setTimeout(() => {
+                          document.getElementById('block').classList.remove('flash');
+                      }, 1000);
+alert("yo");
+
                // Calculate time into the match: 150 - (timerValue)
                timerValue = timerTime;
                const timeIntoMatch = 150 - timerValue;
