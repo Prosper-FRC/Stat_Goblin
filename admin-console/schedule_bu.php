@@ -13,31 +13,24 @@ try {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
     $csvFile = $_FILES['csv_file']['tmp_name'];
     $importedData = [];
-    $table = '';
 
     if (($handle = fopen($csvFile, "r")) !== false) {
-        // Read the header row and trim whitespace
+        // Read and discard the header row
         $header = fgetcsv($handle, 1000, ",");
-        $header = array_map('trim', $header);
 
-        // Define expected headers for the two CSV formats
-        $expectedHeadersActiveEvent = ['event_name', 'match_number', 'red1', 'red2', 'red3', 'blue1', 'blue2', 'blue3'];
-        $expectedHeadersScouting = ['id', 'ip_address', 'event_name', 'match_no', 'time_sec', 'robot', 'alliance', 'action', 'location', 'result', 'points', 'timestamp'];
+        // Process each CSV row (each row represents one match)
+        while (($data = fgetcsv($handle, 1000, ",")) !== false) {
+            // Assumed CSV columns: event_name, match_number, red_1, red_2, red_3, blue_1, blue_2, blue_3
+            $event_name   = trim($data[0]);
+            $match_number = trim($data[1]);
+            $red1         = trim($data[2]);
+            $red2         = trim($data[3]);
+            $red3         = trim($data[4]);
+            $blue1        = trim($data[5]);
+            $blue2        = trim($data[6]);
+            $blue3        = trim($data[7]);
 
-        if ($header === $expectedHeadersActiveEvent) {
-            // File is for active_event table
-            $table = 'active_event';
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                $event_name   = trim($data[0]);
-                $match_number = trim($data[1]);
-                $red1         = trim($data[2]);
-                $red2         = trim($data[3]);
-                $red3         = trim($data[4]);
-                $blue1        = trim($data[5]);
-                $blue2        = trim($data[6]);
-                $blue3        = trim($data[7]);
-
-                // Create rows for the Red alliance
+            // Create rows for the Red alliance
             foreach ([$red1, $red2, $red3] as $robot) {
                 if (!empty($robot)) {
                     $importedData[] = [
@@ -59,96 +52,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
                     ];
                 }
             }
-            }
-        } elseif ($header === $expectedHeadersScouting) {
-            // File is for scouting_submissions table
-            $table = 'scouting_submissions';
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                $id         = trim($data[0]);
-                $ip_address = trim($data[1]);
-                $event_name = trim($data[2]);
-                $match_no   = trim($data[3]);
-                $time_sec   = trim($data[4]);
-                $robot      = trim($data[5]);
-                $alliance   = trim($data[6]);
-                $action     = trim($data[7]);
-                $location   = trim($data[8]);
-                $result     = trim($data[9]);
-                $points     = trim($data[10]);
-                $timestamp  = trim($data[11]);
-
-                $importedData[] = [
-                    "id"         => $id,
-                    "ip_address" => $ip_address,
-                    "event_name" => $event_name,
-                    "match_no"   => $match_no,
-                    "time_sec"   => $time_sec,
-                    "robot"      => $robot,
-                    "alliance"   => $alliance,
-                    "action"     => $action,
-                    "location"   => $location,
-                    "result"     => $result,
-                    "points"     => $points,
-                    "timestamp"  => $timestamp
-                ];
-            }
-        } else {
-            die("CSV format not recognized. Please ensure the CSV header matches one of the expected formats.");
         }
         fclose($handle);
     } else {
         die("Error opening CSV file.");
     }
 
-    // Build a multi-row INSERT statement based on the detected table
-    if ($table === 'active_event') {
-        $values = [];
-        foreach ($importedData as $row) {
-            $values[] = "(" .
-                $pdo->quote($row["event_name"]) . ", " .
-                $pdo->quote($row["match_number"]) . ", " .
-                $pdo->quote($row["alliance"]) . ", " .
-                $pdo->quote($row["robot"]) .
-            ")";
-        }
-        $sqlInsert = "INSERT INTO active_event (event_name, match_number, alliance, robot) VALUES " . implode(", ", $values);
-    } elseif ($table === 'scouting_submissions') {
-        $values = [];
-        foreach ($importedData as $row) {
-            $values[] = "(" .
-                $pdo->quote($row["id"]) . ", " .
-                $pdo->quote($row["ip_address"]) . ", " .
-                $pdo->quote($row["event_name"]) . ", " .
-                $pdo->quote($row["match_no"]) . ", " .
-                $pdo->quote($row["time_sec"]) . ", " .
-                $pdo->quote($row["robot"]) . ", " .
-                $pdo->quote($row["alliance"]) . ", " .
-                $pdo->quote($row["action"]) . ", " .
-                $pdo->quote($row["location"]) . ", " .
-                $pdo->quote($row["result"]) . ", " .
-                $pdo->quote($row["points"]) . ", " .
-                $pdo->quote($row["timestamp"]) .
-            ")";
-        }
-        $pdo->exec("DELETE FROM scouting_submissions");
-
-$sqlInsert = "INSERT INTO scouting_submissions 
-    (id, ip_address, event_name, match_no, time_sec, robot, alliance, action, location, result, points, timestamp) VALUES " 
-    . implode(", ", $values);
-
-    } else {
-        die("Unknown table selected.");
+    // Build a multi-row INSERT statement for the active_event table
+    $values = [];
+    foreach ($importedData as $row) {
+        $values[] = "(" .
+            $pdo->quote($row["event_name"]) . ", " .
+            $pdo->quote($row["match_number"]) . ", " .
+            $pdo->quote($row["alliance"]) . ", " .
+            $pdo->quote($row["robot"]) .
+        ")";
     }
+    $sqlInsert = "INSERT INTO active_event (event_name, match_number, alliance, robot) VALUES " . implode(", ", $values);
 
     try {
         $pdo->exec($sqlInsert);
-        echo "Data imported successfully into " . $table . ".";
+        echo "Data imported successfully.";
     } catch (PDOException $e) {
         die("Error inserting data: " . $e->getMessage());
     }
-    exit; // End the script after processing the upload.
+    exit; // End the script after processing the AJAX upload.
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -306,4 +237,3 @@ $sqlInsert = "INSERT INTO scouting_submissions
     </script>
 </body>
 </html>
-

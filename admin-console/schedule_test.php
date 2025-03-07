@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
         $header = array_map('trim', $header);
 
         // Define expected headers for the two CSV formats
-        $expectedHeadersActiveEvent = ['event_name', 'match_number', 'red_1', 'red_2', 'red_3', 'blue_1', 'blue_2', 'blue_3'];
+        $expectedHeadersActiveEvent = ['event_name', 'match_number', 'red1', 'red2', 'red3', 'blue1', 'blue2', 'blue3'];
         $expectedHeadersScouting = ['id', 'ip_address', 'event_name', 'match_no', 'time_sec', 'robot', 'alliance', 'action', 'location', 'result', 'points', 'timestamp'];
 
         if ($header === $expectedHeadersActiveEvent) {
@@ -38,27 +38,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
                 $blue3        = trim($data[7]);
 
                 // Create rows for the Red alliance
-                foreach ([$red1, $red2, $red3] as $robot) {
-                    if (!empty($robot)) {
-                        $importedData[] = [
-                            "event_name"   => $event_name,
-                            "match_number" => $match_number,
-                            "alliance"     => "Red",
-                            "robot"        => $robot
-                        ];
-                    }
+            foreach ([$red1, $red2, $red3] as $robot) {
+                if (!empty($robot)) {
+                    $importedData[] = [
+                        "event_name"   => $event_name,
+                        "match_number" => $match_number,
+                        "alliance"     => "Red",
+                        "robot"        => $robot
+                    ];
                 }
-                // Create rows for the Blue alliance
-                foreach ([$blue1, $blue2, $blue3] as $robot) {
-                    if (!empty($robot)) {
-                        $importedData[] = [
-                            "event_name"   => $event_name,
-                            "match_number" => $match_number,
-                            "alliance"     => "Blue",
-                            "robot"        => $robot
-                        ];
-                    }
+            }
+            // Create rows for the Blue alliance
+            foreach ([$blue1, $blue2, $blue3] as $robot) {
+                if (!empty($robot)) {
+                    $importedData[] = [
+                        "event_name"   => $event_name,
+                        "match_number" => $match_number,
+                        "alliance"     => "Blue",
+                        "robot"        => $robot
+                    ];
                 }
+            }
             }
         } elseif ($header === $expectedHeadersScouting) {
             // File is for scouting_submissions table
@@ -130,7 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
                 $pdo->quote($row["timestamp"]) .
             ")";
         }
-        $sqlInsert = "INSERT IGNORE INTO scouting_submissions 
+        $pdo->exec("DELETE FROM scouting_submissions");
+
+$sqlInsert = "INSERT INTO scouting_submissions 
     (id, ip_address, event_name, match_no, time_sec, robot, alliance, action, location, result, points, timestamp) VALUES " 
     . implode(", ", $values);
 
