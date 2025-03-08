@@ -250,6 +250,7 @@
             let isPaused = 0;
             let year = null;
             let timerTime =150;
+            let confettiTime =0;
             
             // Function to fetch match data
             async function fetchMatchData() {
@@ -313,7 +314,11 @@
             
                if (remainingSeconds === 0) {
                    timerElement.textContent = "Finished";
-                   throwCrazyConfetti();
+                   confettiTime +=1;
+                   if (confettiTime <=6){
+                    throwCrazyConfetti();
+                   }
+                   
                    // Call the function to start the song
 //playVibrationSong();
 
@@ -617,7 +622,7 @@ function checkServerConnectivity() {
     fetch('../php/server_status.php', { cache: 'no-store' })
         .then(response => {
             if (response.ok) {
-                // Server is reachable, attempt to send offline submissions
+                // Server is reacxhable, attempt to send offline submissions
                 sendOfflineSubmissions();
             } else {
                 console.log('Server status check failed with status:', response.status);
