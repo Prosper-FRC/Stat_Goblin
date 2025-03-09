@@ -125,7 +125,7 @@
             // Change the background color of #block based on alliance
             const blockElement = document.getElementById('block');
             
-           
+
             
             
             // Update alliance and opponent button colors
@@ -165,6 +165,27 @@
                });
             });
             
+            function throwCrazyConfetti() {
+    let count = 800;
+    let defaults = {
+        origin: { y: 0.7 }
+    };
+
+    function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio)
+        }));
+    }
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2, { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91 });
+    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92 });
+    fire(0.1, { spread: 140, startVelocity: 45 });
+}
+
+
+
             // Function to start the countdown timer
             function startTimer() {
             
@@ -187,7 +208,7 @@
             
                   // Check if time into match is 14, and trigger the flash effect
                   const timeIntoMatch = 150 - timerValue;
-                  if (timeIntoMatch == 14) {
+                  if (timeIntoMatch === 14) {
                       blockElement.classList.add('flash'); // Add flash effect to the block container
             
                       // Remove the flash class after 1 second to stop the flashing
@@ -229,6 +250,7 @@
             let isPaused = 0;
             let year = null;
             let timerTime =150;
+            let confettiTime =0;
             
             // Function to fetch match data
             async function fetchMatchData() {
@@ -292,6 +314,11 @@
             
                if (remainingSeconds === 0) {
                    timerElement.textContent = "Finished";
+                   confettiTime +=1;
+                   if (confettiTime <=6){
+                    throwCrazyConfetti();
+                   }
+                   
                    // Call the function to start the song
 //playVibrationSong();
 
@@ -350,15 +377,8 @@
                const action = document.querySelector('.button.selected');
                const actionData = action ? actions[action.getAttribute('data-action')] : null;
                const location = actionData ? actionData.location : 'Unknown';
-           
-
-                    console.log('success');
-                    document.getElementById('block').classList.add('flash'); // Add flash effect to the block container
             
-                      // Remove the flash class after 1 second to stop the flashing
-                      setTimeout(() => {
-                          document.getElementById('block').classList.remove('flash');
-                      }, 1000);
+
 
 
                // Calculate time into the match: 150 - (timerValue)
@@ -383,7 +403,37 @@
                const statusDisplay = document.getElementById('statusDisplay');
                const result = success ? 'Success' : 'Failure';
                statusDisplay.textContent = result;
-            
+
+console.log(result);
+if(result=='Failure'){
+                    document.getElementById('block').classList.add('flashFailure'); // Add flash effect to the block container
+                    document.getElementById('scoreboard').classList.add('shake');
+                   
+                      // Remove the flash class after 1 second to stop the flashing
+                      setTimeout(() => {
+                          document.getElementById('block').classList.remove('flashFailure');
+                          document.getElementById('scoreboard').classList.remove('shake');
+                      }, 250);
+
+}else{
+
+document.getElementById('block').classList.add('flashSuccess'); // Add flash effect to the block container
+                    document.getElementById('scoreboard').classList.add('shake');
+                   
+                      // Remove the flash class after 1 second to stop the flashing
+                      setTimeout(() => {
+                          document.getElementById('block').classList.remove('flashSuccess');
+                          document.getElementById('scoreboard').classList.remove('shake');
+                      }, 250);
+
+
+
+
+
+}
+
+
+
                // Only alert if time is between 1 and 149 seconds
                if (timerValue > 0 && timerValue < 150) {
                    // Vibrate for 200ms on both success or failure
@@ -409,22 +459,100 @@
                    };
             
                    // Send data via fetch
-                   fetch('../php/insert_submission.php', {
-                       method: 'POST',
-                       headers: {
-                           'Content-Type': 'application/json',
-                       },
-                       body: JSON.stringify(data),
-                   })
-                   .then(response => response.json())
-                   .then(responseData => {
-                       console.log(responseData); // Handle the response from the server
-                   })
-                   .catch(error => {
-                       console.error('Error:', error);
-                   });
+                  // Send data via fetch
+                    fetch('../php/insert_submission.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    })
+                    .then(response => response.json())
+                    .then(responseData => {
+                        console.log(responseData); // Handle the response from the server
+                        // Optionally, if the response indicates failure, save offline
+                        if (responseData.status !== 'success') {
+                            saveSubmissionOffline(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Save submission offline on error
+                        saveSubmissionOffline(data);
+                    });
+
+
+
+
+
                }
             }
+
+/*
+This function creates a new row in the offline submissions table using the submission data:
+*/
+function saveSubmissionOffline(data) {
+    const tableBody = document.querySelector('#offlineSubmissions tbody');
+    const row = document.createElement('tr');
+
+    // Create cells for each property
+    const fields = ['event_name', 'match_no', 'time_sec', 'robot', 'alliance', 'action', 'location', 'result', 'points'];
+    fields.forEach(field => {
+        const cell = document.createElement('td');
+        cell.textContent = data[field];
+        row.appendChild(cell);
+    });
+
+    tableBody.appendChild(row);
+}
+
+
+/*
+This function loops through the table rows, builds the submission data from each row, and tries to resend it. If successful, the row is removed from the table:
+*/
+
+function sendOfflineSubmissions() {
+    const tableBody = document.querySelector('#offlineSubmissions tbody');
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    rows.forEach((row) => {
+        const cells = row.querySelectorAll('td');
+        const submissionData = {
+            event_name: cells[0].textContent,
+            match_no: cells[1].textContent,
+            time_sec: cells[2].textContent,
+            robot: cells[3].textContent,
+            alliance: cells[4].textContent,
+            action: cells[5].textContent,
+            location: cells[6].textContent,
+            result: cells[7].textContent,
+            points: cells[8].textContent,
+        };
+
+        fetch('../php/insert_submission.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(submissionData),
+        })
+        .then(response => response.json())
+        .then(responseData => {
+            if (responseData.status === 'success') {
+                // Remove the row if the submission was sent successfully
+                row.remove();
+            }
+        })
+        .catch(error => {
+            console.error("Failed to send offline submission:", error);
+            // The row remains for future resend attempts
+        });
+    });
+}
+
+
+
+
             
             // Swipe functionality
 //            let startX = 0;
@@ -470,7 +598,7 @@ blockElement.addEventListener('touchmove', (e) => {
     }
 }, { passive: false });
 
-blockElement.addEventListener('touchend', (e) => {
+document.addEventListener('touchend', (e) => {
     if (!preventSwipeNav) return; // Only process swipe if horizontal movement was detected
 
     const endX = e.changedTouches[0].clientX;
@@ -478,6 +606,7 @@ blockElement.addEventListener('touchend', (e) => {
 
     if (diff > 200) {
         // Swiped right (Success)
+
         handleSwipe(true);
     } else if (diff < -200) {
         // Swiped left (Failure)
@@ -489,7 +618,23 @@ blockElement.addEventListener('touchend', (e) => {
 });
 
 
+function checkServerConnectivity() {
+    fetch('../php/server_status.php', { cache: 'no-store' })
+        .then(response => {
+            if (response.ok) {
+                // Server is reacxhable, attempt to send offline submissions
+                sendOfflineSubmissions();
+            } else {
+                console.log('Server status check failed with status:', response.status);
+            }
+        })
+        .catch(error => {
+            console.log('Server is not reachable:', error);
+        });
+}
 
+// Check connectivity every 5 seconds (adjust as needed)
+setInterval(checkServerConnectivity, 5000);
 
 
 function playVibrationSong(){

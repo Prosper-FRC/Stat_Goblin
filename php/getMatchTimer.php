@@ -30,7 +30,7 @@ try {
     $activeMatch = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($activeMatch) {
-        // Populate match data for response
+        // Populate match data for response and add server_time
         $matchData = [
             'start_time' => $activeMatch['start_time'],
             'total_pause_duration' => $activeMatch['total_pause_duration'],
@@ -38,6 +38,7 @@ try {
             'active' => $activeMatch['active'],
             'pause' => $activeMatch['pause'],
             'year' => $currentYear,
+            'server_time' => gmdate('Y-m-d\TH:i:s\Z') // Current server time added here
         ];
     } else {
         // No matching row found
@@ -51,4 +52,3 @@ try {
 // Return the match data as JSON
 echo json_encode($matchData);
 ?>
-

@@ -253,82 +253,81 @@
             let confettiTime =0;
             
             // Function to fetch match data
-            async function fetchMatchData() {
-               try {
-                   const url = `../php/getMatchTimer.php?event=${encodeURIComponent(event)}&match=${encodeURIComponent(match)}`;
-                   const response = await fetch(url);
-                   if (!response.ok) throw new Error(`Failed to fetch match data. Status: ${response.status}`);
-                   const data = await response.json();
-            
-                   // Update global variables
-                   startTime = data.start_time || null;
-                   totalPause = data.total_pause_duration || 0;
-                   pausedAt = data.paused_at || null;
-                   isActive = data.active || 0;
-                   isPaused = data.pause || 0;
-                   year = data.year || null;
-            
-                   // Display fetched data in the console div
-                   if (consoleDiv) {
-                       consoleDiv.innerHTML = `
-                           <strong>Match Data:</strong><br>
-                           Start Time: ${startTime}<br>
-                           Total Pause Duration: ${totalPause}<br>
-                           Paused At: ${pausedAt || 'N/A'}<br>
-                           Active: ${isActive}<br>
-                           Pause: ${isPaused}<br>
-                           Year: ${year}
-                       `;
-                   }
-               } catch (error) {
-                   console.error("Error fetching match data:", error);
-                   if (consoleDiv) {
-                       consoleDiv.innerHTML += `<br><strong>Error:</strong> ${error.message}`;
-                   }
-               }
-            }
-            
+// Global variable to store time drift
+let timeDrift = 0;
+
+async function fetchMatchData() {
+    try {
+        const url = `../php/getMatchTimer.php?event=${encodeURIComponent(event)}&match=${encodeURIComponent(match)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch match data. Status: ${response.status}`);
+        const data = await response.json();
+
+        // Use the server_time provided in ISO 8601 format
+        const serverTimeMs = new Date(data.server_time).getTime();
+        const clientTimeMs = Date.now();
+        timeDrift = serverTimeMs - clientTimeMs;
+
+        // Assume start_time is in the same time format as server_time
+        startTime = new Date(data.start_time).getTime();
+        totalPause = data.total_pause_duration || 0;
+        pausedAt = data.paused_at || null;
+        isActive = data.active || 0;
+        isPaused = data.pause || 0;
+        year = data.year || null;
+
+        console.log("Server Time:", new Date(serverTimeMs).toLocaleString());
+        console.log("Client Time:", new Date(clientTimeMs).toLocaleString());
+        console.log("Time Drift (ms):", timeDrift);
+    } catch (error) {
+        console.error("Error fetching match data:", error);
+    }
+}
+
+
+let confettiThrown = false;
             // Function to calculate and update the match timer
-            function updateMatchTimer() {
-               const timerElement = document.getElementById('timer-inner');
-               if (!startTime || isActive === 0) {
-                   timerElement.textContent = "Inactive";
-                   return;
-               }
-            
-               const startTimeMs = new Date(startTime).getTime();
-               let elapsedSeconds = (Date.now() - startTimeMs) / 1000 - totalPause;
-            
-               if (isPaused) {
-                   timerElement.textContent = "Paused";
-                   return;
-               }
-           
-               if (elapsedSeconds > 15 && elapsedSeconds < 18){
-                navigator.vibrate([20, 10, 20, 10, 50])
+function updateMatchTimer() {
+    const timerElement = document.getElementById('timer-inner');
+    if (!startTime || isActive === 0) {
+        timerElement.textContent = "Inactive";
+        return;
+    }
 
-               }
+    // Use the dynamically computed drift correction
+    const correctedTimeMs = Date.now() + timeDrift;
+    let elapsedSeconds = (correctedTimeMs - startTime) / 1000 - totalPause;
 
-            const remainingSeconds = Math.max(150 - elapsedSeconds, 0);
-            timerTime=remainingSeconds
-            
-               if (remainingSeconds === 0) {
-                   timerElement.textContent = "Finished";
-                   confettiTime +=1;
-                   if (confettiTime <=6){
-                    throwCrazyConfetti();
-                   }
-                   
-                   // Call the function to start the song
-//playVibrationSong();
+    if (isPaused) {
+        timerElement.textContent = "Paused";
+        return;
+    }
 
-                   return;
-               }
-            
-               const minutes = Math.floor(remainingSeconds / 60);
-               const seconds = Math.floor(remainingSeconds % 60);
-               timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            }
+    const remainingSeconds = Math.max(150 - elapsedSeconds, 0);
+    timerTime = remainingSeconds;
+
+
+    if (elapsedSeconds >= 150) {
+        timerElement.textContent = "Finished";
+        if (!confettiThrown) {
+            throwCrazyConfetti();
+            confettiThrown = true;
+        }
+        return;
+    }
+
+
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = Math.floor(remainingSeconds % 60);
+    timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+
+
+
+
+
+}
+
             
             // Poll match data and update the timer every 1/4second
             setInterval(async () => {
@@ -336,12 +335,7 @@
 
                 fetchMatchData();
                updateMatchTimer();
-            }, 250);
-            
-            
-            
-            
-            //timerValue - remainingSeconds;
+            }, 500);
             
             
             
