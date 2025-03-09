@@ -28,6 +28,10 @@ try {
         $stmt->execute();
     }
 
+
+
+
+
     // Begin Match: Insert or update match
     if (isset($_POST['begin_match'])) {
         $year = $_POST['year'];
@@ -122,7 +126,31 @@ try {
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
+
+
+
+
+
+
+
+
 ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -134,7 +162,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owl Admin</title>
-
+ <script src="../js/jquery-3.7.1.min.js"></script> 
     <style>
          @font-face {
             font-family: 'Roboto';
@@ -226,8 +254,9 @@ try {
             display: block;
             margin: 0 auto 1rem auto;
         }
-        select{min-width: 120px;}
+        select{min-width: 200px;}
         input{
+            min-width: 200px;
 font-size: 1.1rem; /* Increases font size for better readability */
             padding: 12px; /* Adds padding for touch-friendly areas */
             border: 1px solid #fff; /* Adds a white border */
@@ -333,7 +362,9 @@ width: 395px;
 .blueRobots{background-color:#2C3E50; }
 
 #pause{dispay:none;}
+
     </style>
+
 
 
 <link rel="stylesheet" href="../css/select.css">
@@ -368,6 +399,8 @@ width: 395px;
 
         <label for="match_number"></label>
         <input type="number" name="match_number" id="match_number" required min="1" placeholder="Enter Match Number">
+        <!-- Initially hidden via inline style -->
+<button type="submit" name="next_match" id="nextMatch" style="visibility: hidden; width: 0px;">Next Match</button>
 
         <button type="submit" name="begin_match">Begin Match</button>
     </form>
@@ -430,7 +463,9 @@ width: 395px;
         if (remainingSeconds === 0) {
             timerElement.textContent = "Match Over";
             clearInterval(timerInterval);
-
+             // Show the Next Match button
+     document.getElementById('nextMatch').style.visibility = 'visible';
+document.getElementById('nextMatch').style.width = '120px';
             // Deactivate the match when the timer reaches 0
             if (matchId) {
                 fetch('../php/deactivate_match.php', {
@@ -526,6 +561,51 @@ div.innerHTML = `
     // Refresh data every second
     setInterval(fetchMatchData, 1000);
     fetchMatchData(); // Run immediately on page load
+
+
+
+
+function setNextMatch(){
+
+
+
+fetch('get_active_event.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Active Event:", data.activeEventName);
+            console.log("Next Match:", data.activeMatchNumber);
+            // You can update your dropdowns or inputs here
+            document.getElementById('event').value = data.activeEventName;
+            document.getElementById('match_number').value = data.activeMatchNumber;
+        })
+        .catch(error => console.error('Error fetching active event data:', error));
+
+
+
+
+
+
+const currentYear = new Date().getFullYear();
+console.log(currentYear);
+$('#year').val(currentYear);
+
+
+}
+setNextMatch();
+
+
+
+document.getElementById('nextMatch').addEventListener('click', function(e) {
+    // Optionally, prevent the default form submission if needed:
+    e.preventDefault();
+    // Call your JavaScript function to process the next match, if applicable:
+    setNextMatch(); 
+    // Hide the button:
+     this.style.visibility = 'hidden';
+     this.style.width = '0px';
+});
+
+
 </script>
 
 
