@@ -285,9 +285,49 @@ async function fetchMatchData() {
 }
 
 
+// update for Auton to Teleop Delay
+// let autonOver = false;
+// let delay = 0; // Global variable to store delay value
+// 
+// // Fetch delay from PHP
+// function fetchDelay() {
+//     $.ajax({
+//         type: 'POST',
+//         url: '../php/get_delay.php',  // Make sure this path is correct
+//         dataType: 'json',  // Expect JSON response
+//         success: function(response) {
+//             if (response.delay !== null) {
+//                 delay = parseInt(response.delay); // Store the fetched delay globally
+//                 console.log("Fetched delay:", delay);
+//             } else {
+//                 console.error("No delay data available.");
+//             }
+//         },
+//         error: function(xhr, status, error) {
+//             console.error("Error fetching delay:", error);
+//         }
+//     });
+// }
+// 
+// // Call fetchDelay when the page loads
+// fetchDelay();
+
+
+
+
+
+
+
+
+
 let confettiThrown = false;
             // Function to calculate and update the match timer
+
+
 function updateMatchTimer() {
+
+
+
     const timerElement = document.getElementById('timer-inner');
     if (!startTime || isActive === 0) {
         timerElement.textContent = "Inactive";
@@ -298,12 +338,25 @@ function updateMatchTimer() {
     const correctedTimeMs = Date.now() + timeDrift;
     let elapsedSeconds = (correctedTimeMs - startTime) / 1000 - totalPause;
 
+//  Apply Delay Between Auto and Teleop (Only Once)
+//   if (!autonOver && elapsedSeconds >= 19) {
+//       startTime += delay * 1000; // Pause Timer for Delay Duration
+//       autonOver = true; // Ensure this runs only once
+//       console.log(`Autonomous ended, applying ${delay}s delay.`);
+//       return; // Exit function so timer does not tick until next call
+//   }
+
+
+
+
+
     if (isPaused) {
         timerElement.textContent = "Paused";
         return;
     }
 
     const remainingSeconds = Math.max(150 - elapsedSeconds, 0);
+
     timerTime = remainingSeconds;
 
 
@@ -381,7 +434,7 @@ function updateMatchTimer() {
             
                // Determine points based on time into the match
                let points = 0;
-               if (timeIntoMatch <= 18) {
+               if (timeIntoMatch <= 15) {
                    // Use auto points if time into match is less than 15 seconds
                    points = auto_points[action.getAttribute('data-action')] || 0;
                } else {

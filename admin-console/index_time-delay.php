@@ -412,8 +412,8 @@ width: 395px;
         <label for="match_number"></label>
         <input type="number" name="match_number" id="match_number" required min="1" placeholder="Enter Match Number">
         <!-- Initially hidden via inline style -->
-<!--<button type="submit" name="next_match" id="nextMatch" style="visibility: hidden; width: 0px;">Next Match</button>
--->
+<button type="submit" name="next_match" id="nextMatch" style="visibility: hidden; width: 0px;">Next Match</button>
+
         <button type="submit" name="begin_match">Begin Match</button>
     </form>
 
@@ -421,19 +421,18 @@ width: 395px;
     <h2>Match Timer</h2>
     <div>
         <?php if ($activeMatch): ?>
-            <p id="activeMatchinfo">Match <strong><?= htmlspecialchars($activeMatch['match_number']) ?></strong> for
+            <p>Match <strong><?= htmlspecialchars($activeMatch['match_number']) ?></strong> for
                 <strong><?= htmlspecialchars($activeMatch['event']) ?></strong>(<?= date("Y") ?>) is active.
             </p>
             <p id="timer">Loading...</p>
-            
-
-           <!--
+            <!--
             <form method="POST"  id="pause">
                 <button type="submit" name="toggle_pause">
                     <?= $activeMatch['pause'] == 0 ? 'Pause' : 'Unpause' ?>
                 </button>
             </form>
 -->
+
         <?php else: ?>
             <p>No active match.</p>
         <?php endif; ?>
@@ -451,156 +450,142 @@ width: 395px;
 </div>
 
 <script>
-    // These variables are initialized from your server data.
-    let startTime = <?= json_encode($activeMatch['start_time'] ?? null) ?>;
-    let totalPause = <?= json_encode($activeMatch['total_pause_duration'] ?? 0) ?>;
-    // Cast pause to a boolean for client-side usage.
-    let isPaused = <?= json_encode((bool)($activeMatch['pause'] ?? 0)) ?>;
-    const matchId = <?= json_encode($activeMatch['id'] ?? null) ?>;
-    
-    // Flags to prevent repeated toggles.
-    let autoPauseTriggered = false;
-    let autoUnpauseTriggered = false;
-    
-    // Set your desired delay (in seconds) that the match should remain paused.
-    let delay = 3; // Example: 5-second pause
 
-    // Function to poll the server for the latest pause status.
-    function updatePauseStatus() {
-        fetch('../php/get_pause.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // Optionally, you can send current pause state, but it's not required.
-            body: JSON.stringify({ pause: isPaused })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Expect the server to return an object with "pause" and "total_pause_duration".
-            isPaused = Boolean(data.pause);
-            totalPause = data.total_pause_duration;
-            console.log("Pause value from server:", data.pause);
-        })
-        .catch(error => console.error("Error fetching pause:", error));
-    }
-    // Poll the server for pause status every second.
-    setInterval(updatePauseStatus, 1000);
 
-    // Timer update function.
-    function updateTimer() {
-        const timerElement = document.getElementById('timer');
-        if (!startTime) {
-            timerElement.textContent = "No active match.";
-            return;
-        }
 
-        const startTimeMs = new Date(startTime).getTime();
-        // Calculate effective elapsed time (in seconds), subtracting any total paused duration.
-        let elapsedSeconds = (Date.now() - startTimeMs) / 1000 - totalPause;
-        let remainingSeconds = Math.max(150 - elapsedSeconds, 0);
 
-        // AUTO-TOGGLE LOGIC:
-        // 1. Trigger pause when elapsed time is between 15 and 16 seconds.
-        if (!autoPauseTriggered && elapsedSeconds >= 15 && elapsedSeconds <= 16) {
-            console.log("Auton ended: triggering pause at elapsed =", elapsedSeconds);
-            fetch('../php/toggle_pause.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ match_id: matchId })
-            })
-            .then(response => response.text())
-            .then(data => console.log("Toggle pause response:", data))
-            .catch(error => console.error("Error toggling pause:", error));
-            autoPauseTriggered = true; // ensure this fires only once
-        }
+    // update for Auton to Teleop Delay
+let autonOver = false;
+let delay = 0; // Global variable to store delay value
 
-        // 2. Trigger unpause when elapsed time is between (delay+15) and (delay+16) seconds.
-        if (!autoUnpauseTriggered && elapsedSeconds >= delay + 15 && elapsedSeconds <= delay + 16) {
-            console.log("Teleop started: triggering unpause at elapsed =", elapsedSeconds);
-            fetch('../php/toggle_pause.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ match_id: matchId })
-            })
-            .then(response => response.text())
-            .then(data => console.log("Toggle unpause response:", data))
-            .catch(error => console.error("Error toggling pause:", error));
-            autoUnpauseTriggered = true; // ensure this fires only once
-        }
-
-        // If the match is currently paused, show "Paused" and exit.
-        if (isPaused) {
-            timerElement.textContent = "Paused";
-            return;
-        }
-
-        // If time is up, display "Match Over" and deactivate match.
-        if (remainingSeconds === 0) {
-            timerElement.textContent = "Match Over";
-            clearInterval(timerInterval);
-  
-
-            // Optionally deactivate the match on the server:
-            if (matchId) {
-                fetch('../php/deactivate_match.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ match_id: matchId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log("Match deactivated successfully.");
-                    } else {
-                        console.error("Failed to deactivate match.");
-                    }
-                })
-                .catch(error => console.error("Error deactivating match:", error));
+// Fetch delay from PHP
+function fetchDelay() {
+    $.ajax({
+        type: 'POST',
+        url: '../php/get_delay.php',  // Make sure this path is correct
+        dataType: 'json',  // Expect JSON response
+        success: function(response) {
+            if (response.delay !== null) {
+                delay = parseInt(response.delay); // Store the fetched delay globally
+                console.log("Fetched delay:", delay);
+            } else {
+                console.error("No delay data available.");
             }
-
-
-setTimeout(() => {
-  console.log("First wait (3 seconds) complete");
-  
-  setTimeout(() => {
-    document.getElementById("activeMatchinfo").textContent = "Getting Next Match";
-    timerElement.textContent = ""
-    console.log("Second wait (2 seconds) complete");
-    
-    setTimeout(() => {
-          setNextMatch();
-      console.log("Third wait (1 second) complete");
-      document.getElementById("activeMatchinfo").textContent = "Ready to play!";
-      
-    }, 1000); // third wait: 1 second
-    
-  }, 2000); // second wait: 2 seconds
-  
-}, 3000); // first wait: 3 seconds
-
-
-
-
-
-            return;
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching delay:", error);
         }
+    });
+}
 
-        // Otherwise, update the timer display.
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = Math.floor(remainingSeconds % 60);
-        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+// Call fetchDelay when the page loads
+fetchDelay();
+
+
+
+// PHP-provided variables
+let startTime = <?= json_encode($activeMatch['start_time'] ?? null) ?>;
+let totalPause = <?= json_encode($activeMatch['total_pause_duration'] ?? 0) ?>;
+let isPaused = <?= json_encode($activeMatch['pause'] ?? 0) ?>;
+const matchId = <?= json_encode($activeMatch['id'] ?? null) ?>;
+
+// Additional globals for delay handling
+              
+let isDelayPaused = false;   // Flag to indicate we're in a delay pause
+let delayPauseStart = 0;     // Timestamp when delay pause began
+let frozenRemaining = null;  // Remaining time frozen when delay starts
+
+function updateTimer() {
+    const timerElement = document.getElementById('timer');
+    
+    // Check that a match is active
+    if (!startTime) {
+        timerElement.textContent = "No active match.";
+        return;
     }
+    
+    // Convert startTime to milliseconds
+    let startTimeMs = new Date(startTime).getTime();
+    // Calculate elapsed time in seconds, adjusted for any total pause duration
+    let elapsedSeconds = (Date.now() - startTimeMs) / 1000 - totalPause;
+    
+    // ----- Delay Pause Logic: Freeze timer display for delay duration -----
+    // When autonomous period ends (after 19 seconds elapsed) and before delay is applied:
+    if (!autonOver && elapsedSeconds >= 15) {
+        // On the first tick that meets the condition, record when delay starts
+        if (!isDelayPaused) {
+            isDelayPaused = true;
+            delayPauseStart = Date.now();
+            // Freeze the remaining time at this moment
+            frozenRemaining = Math.max(150 - elapsedSeconds, 0);
+            console.log(`Delay pause started. Timer frozen at ${frozenRemaining} seconds remaining.`);
+        }
+        // While within the delay period, display the frozen remaining time
+        if (Date.now() - delayPauseStart < delay * 1000) {
+            let minutes = Math.floor(frozenRemaining / 60);
+            let seconds = Math.floor(frozenRemaining % 60);
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+            return; // Exit updateTimer until delay period is over
+        } else {
+            // After the delay period, update the totalPause to "skip" delay seconds.
+            autonOver = true;        // Mark that we've applied the delay
+            isDelayPaused = false;   // Reset the delay pause flag
+            totalPause += delay;     // Add the delay seconds to totalPause
+            console.log(`Delay pause ended. Total pause increased by ${delay} seconds.`);
+            // Recalculate elapsedSeconds with the updated totalPause.
+            elapsedSeconds = (Date.now() - startTimeMs) / 1000 - totalPause;
+        }
+    }
+    // ----- End Delay Pause Logic -----
+    
+    // If the match is externally paused, display "Paused"
+    if (isPaused) {
+        timerElement.textContent = "Paused";
+        return;
+    }
+    
+    // Compute remaining match time (assuming 150 seconds total)
+    const remainingSeconds = Math.max(150 - elapsedSeconds, 0);
+    
+    // When the timer reaches 0, mark match over and perform cleanup actions
+    if (remainingSeconds === 0) {
+        timerElement.textContent = "Match Over";
+        clearInterval(timerInterval);
+        // Optionally, show the Next Match button:
+        const nextMatchButton = document.getElementById('nextMatch');
+        if (nextMatchButton) {
+            nextMatchButton.style.visibility = 'visible';
+            nextMatchButton.style.width = '120px';
+        }
+        // Deactivate the match if matchId is defined
+        if (matchId) {
+            fetch('../php/deactivate_match.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ match_id: matchId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("Match deactivated successfully.");
+                } else {
+                    console.error("Failed to deactivate match.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+        return;
+    }
+    
+    // Format the remaining time in minutes and seconds
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = Math.floor(remainingSeconds % 60);
+    timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+}
 
-    // Update the timer every second.
-    const timerInterval = setInterval(updateTimer, 1000);
-    updateTimer();
-
-
-
-
-
-
-
-
+// Start the timer update interval (update every second)
+let timerInterval = setInterval(updateTimer, 1000);
+updateTimer();
 </script>
 
 
@@ -702,72 +687,15 @@ setNextMatch();
 
 
 
-//document.getElementById('nextMatch').addEventListener('click', function(e) {
-//    // Optionally, prevent the default form submission if needed:
-//    e.preventDefault();
-//    // Call your JavaScript function to process the next match, if applicable:
-//    setNextMatch(); 
-//    // Hide the button:
-//     this.style.visibility = 'hidden';
-//     this.style.width = '0px';
-//});
-
-
-
-
-
-
-
-
-document.getElementById('delay').addEventListener('change', function() {
-    let delayValue = this.value;
-    if (delayValue !== "") {
-        fetch('../php/insert_delay.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ delay: delayValue })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success){
-                console.log("Delay inserted:", data.delay);
-            } else {
-                console.error("Error:", data.error);
-            }
-        })
-        .catch(error => console.error("Error inserting delay:", error));
-    }
+document.getElementById('nextMatch').addEventListener('click', function(e) {
+    // Optionally, prevent the default form submission if needed:
+    e.preventDefault();
+    // Call your JavaScript function to process the next match, if applicable:
+    setNextMatch(); 
+    // Hide the button:
+     this.style.visibility = 'hidden';
+     this.style.width = '0px';
 });
-
-
-
-
-
-function fetchDelay() {
-    $.ajax({
-        type: 'POST',
-        url: '../php/get_delay.php',  // Make sure this path is correct
-        dataType: 'json',  // Expect JSON response
-        success: function(response) {
-            if (response.delay !== null) {
-                delay = parseInt(response.delay); // Store the fetched delay globally
-                console.log("Fetched delay:", delay);
-                document.getElementById('delay').value = delay;
-            } else {
-                console.error("No delay data available.");
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Error fetching delay:", error);
-        }
-    });
-}
-// Call fetchDelay when the page loads
-fetchDelay();
-
-
 
 
 </script>
