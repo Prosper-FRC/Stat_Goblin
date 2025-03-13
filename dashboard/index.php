@@ -525,20 +525,66 @@ if(matchNumber !=="all"){
     }
     
     // Toggle robot exclusion.
-    function toggleRobotFilter() {
-      const dropdown = document.getElementById("robotToggleDropdown");
-      const selectedNum = parseInt(dropdown.value, 10);
-      if (!selectedNum) return;
-      const idx = filterRobots.indexOf(selectedNum);
-      if (idx === -1) {
-        filterRobots.push(selectedNum);
-      } else {
-        filterRobots.splice(idx, 1);
-      }
-      updateRobotCards();
-      dropdown.value = "";
-    }
+//    function toggleRobotFilter() {
+//      const dropdown = document.getElementById("robotToggleDropdown");
+//      const selectedNum = parseInt(dropdown.value, 10);
+//      if (!selectedNum) return;
+//      const idx = filterRobots.indexOf(selectedNum);
+//      if (idx === -1) {
+//        filterRobots.push(selectedNum);
+//      } else {
+//        filterRobots.splice(idx, 1);
+//      }
+//      updateRobotCards();
+//      dropdown.value = "";
+//    }
+
+console.log(document.querySelectorAll('.robot-card').length);
+
+function toggleRobotFilter(cardId) {
+  // If no cardId is provided, use the dropdown's value.
+  const targetId = cardId || document.getElementById("robotToggleDropdown").value.trim();
+  if (!targetId) {
+    console.error("No target id provided and dropdown value is empty.");
+    return;
+  }
+
+  const targetDiv = document.getElementById(targetId);
+  if (!targetDiv) {
+    console.error(`No element found with id "${targetId}"`);
+    return;
+  }
+
+  // Get the actual computed background color
+  let currentColor = window.getComputedStyle(targetDiv).backgroundColor;
+
+  // Convert RGB format to hex
+  const rgbToHex = (rgb) => {
+    let [r, g, b] = rgb.match(/\d+/g).map(Number);
+    return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+  };
+
+  let currentHex = currentColor.startsWith("rgb") ? rgbToHex(currentColor) : currentColor;
+  console.log(`Current Color of ${targetId}: ${currentHex}`);
+
+  // Toggle between #666 and default (empty string)
+  if (currentHex === "#666666" || currentHex === "#333333") {
+    targetDiv.style.backgroundColor = "";
+  } else {
+    targetDiv.style.backgroundColor = "#666";
+  }
+
+  // If triggered by the dropdown, clear its value.
+  if (!cardId) {
+    document.getElementById("robotToggleDropdown").value = "";
+  }
+}
+
+
+
     
+   
+
     // Update robot cards display with sorting and filtering.
     function updateRobotCards() {
       const sortBy = document.getElementById("sortOption").value;
@@ -566,7 +612,7 @@ if(matchNumber !=="all"){
       let html = "";
       robots.forEach((robot, index) => {
         html += `
-          <div class="robot-card card">
+          <div class="robot-card card" id="${robot.robot}">
             <div class="top-row">
               <div class="robot-details">
                 <h3>Robot ${robot.robot}</h3>
@@ -1261,9 +1307,66 @@ function cycleMetrics() {
   console.log("Cycled to metric:", currentMetric);
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  let lastTapTime = 0;
+  let touchStartX = 0;
+  let touchEndX = 0;
 
+  document.body.addEventListener("touchstart", function (e) {
+    const card = e.target.closest(".robot-card");
+    if (!card) return;
 
+    touchStartX = e.touches[0].clientX;
+    console.log(`TOUCH START on ${card.id} at X: ${touchStartX}`);
+  }, { passive: true });
 
+  document.body.addEventListener("touchend", function (e) {
+    const card = e.target.closest(".robot-card");
+    if (!card) return;
+
+    touchEndX = e.changedTouches[0].clientX;
+    console.log(`TOUCH END on ${card.id} at X: ${touchEndX}`);
+
+    const swipeDistance = touchEndX - touchStartX;
+    console.log(`Swipe Distance: ${swipeDistance}`);
+
+    // Get the actual computed background color
+    let currentColor = window.getComputedStyle(card).backgroundColor;
+
+    // Convert RGB to HEX
+    const rgbToHex = (rgb) => {
+      let [r, g, b] = rgb.match(/\d+/g).map(Number);
+      return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+    };
+
+    let currentHex = currentColor.startsWith("rgb") ? rgbToHex(currentColor) : currentColor;
+    console.log(`Current Color of ${card.id}: ${currentHex}`);
+
+    // Detect swipe left or right and toggle between #666 and default
+    if (Math.abs(swipeDistance) > 150) {
+      if (swipeDistance < -150) { // Swipe left → Toggle to default (empty)
+        if (currentHex === "#666666" || currentHex === "#333333") {
+          card.style.backgroundColor = "";
+          console.log(`Swiped LEFT on ${card.id} - Reset to Default`);
+        }
+      } else if (swipeDistance > 150) { // Swipe right → Set to #666
+        if (currentHex !== "#666666") {
+          card.style.backgroundColor = "#666";
+          console.log(`Swiped RIGHT on ${card.id} - Changed to #666`);
+        }
+      }
+    } else {
+      // Handle Double Tap
+      const currentTime = new Date().getTime();
+      if (currentTime - lastTapTime < 300) {
+        toggleRobotFilter(card.id);
+        console.log(`Double TAP on ${card.id}`);
+        e.preventDefault();
+      }
+      lastTapTime = currentTime;
+    }
+  }, { passive: false });
+});
 
 
   </script>
