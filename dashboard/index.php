@@ -657,6 +657,7 @@ function toggleRobotFilter(cardId) {
                     <th>Scoring Location</th>
                     <th>Successes</th>
                     <th>Attempts</th>
+          <th>Successes Per Match</th>
                     <th>Rate</th>
                   </tr>
                 </thead>
@@ -665,36 +666,42 @@ function toggleRobotFilter(cardId) {
                     <td>Level 1</td>
                     <td>${robot.count_level_1 || 0}</td>
                     <td>${robot.level1_attempts || 0}</td>
+          <td>${robot.level1_avg_attempts || 0}</td>
                     <td>${(robot.level1_attempts > 0) ? ((robot.count_level_1 / robot.level1_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
                   <tr>
                     <td>Level 2</td>
                     <td>${robot.count_level_2 || 0}</td>
                     <td>${robot.level2_attempts || 0}</td>
+          <td>${robot.level2_avg_attempts || 0}</td>
                     <td>${(robot.level2_attempts > 0) ? ((robot.count_level_2 / robot.level2_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
                   <tr>
                     <td>Level 3</td>
                     <td>${robot.count_level_3 || 0}</td>
                     <td>${robot.level3_attempts || 0}</td>
+          <td>${robot.level3_avg_attempts || 0}</td>
                     <td>${(robot.level3_attempts > 0) ? ((robot.count_level_3 / robot.level3_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
                   <tr>
                     <td>Level 4</td>
                     <td>${robot.count_level_4 || 0}</td>
                     <td>${robot.level4_attempts || 0}</td>
+          <td>${robot.level4_avg_attempts || 0}</td>
                     <td>${(robot.level4_attempts > 0) ? ((robot.count_level_4 / robot.level4_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
                   <tr>
                     <td>Algae Net</td>
                     <td>${robot.algae_net_success || 0}</td>
                     <td>${robot.algae_net_attempts || 0}</td>
+          <td>${robot.algae_net_avg_attempts || 0}</td>
                     <td>${(robot.algae_net_attempts > 0) ? ((robot.algae_net_success / robot.algae_net_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
                   <tr>
                     <td>Algae Proc</td>
                     <td>${robot.algae_processor_success || 0}</td>
                     <td>${robot.algae_processor_attempts || 0}</td>
+          <td>${robot.algae_processor_avg_attempts || 0}</td>
                     <td>${(robot.algae_processor_attempts > 0) ? ((robot.algae_processor_success / robot.algae_processor_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
                 </tbody>

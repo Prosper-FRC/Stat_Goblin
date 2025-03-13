@@ -35,12 +35,24 @@ try {
             level2_attempts INT DEFAULT 0,
             level3_attempts INT DEFAULT 0,
             level4_attempts INT DEFAULT 0,
+
+            level1_avg_attempts  DECIMAL(5,2) DEFAULT 0,
+            level2_avg_attempts  DECIMAL(5,2) DEFAULT 0,
+            level3_avg_attempts  DECIMAL(5,2) DEFAULT 0,
+            level4_avg_attempts  DECIMAL(5,2) DEFAULT 0,
+            
             algae_net_attempts INT DEFAULT 0,
             algae_net_success INT DEFAULT 0,
+            algae_net_avg_attempts  DECIMAL(5,2) DEFAULT 0,
+
             algae_processor_attempts INT DEFAULT 0,
-            algae_processor_success INT DEFAULT 0
+            algae_processor_success INT DEFAULT 0,
+            algae_processor_avg_attempts  DECIMAL(5,2) DEFAULT 0
         )
     ");
+
+
+
 
     // Step 2: Insert Unique Robots for Selected Event
     $stmt = $pdo->prepare("
@@ -302,6 +314,31 @@ $pdo->exec("
         rc.auton_path = subquery.auton_path
 ");
 
+// Step 11: Fetch average attemtps
+
+
+$pdo->exec("
+    UPDATE temp_robot_categories rc
+    JOIN (
+       
+
+SELECT robot, count(case when result = 'success' and action = 'scores_algae_net' then action else null end)/ count(distinct match_no) as scores_algae_net, count(case when result = 'success' and action = 'scores_algae_processor' then action else null end)/ count(distinct match_no) as scores_algae_processor, count(case when result = 'success' and action = 'scores_coral_level_1' then action else null end)/ count(distinct match_no) as scores_coral_level_1, count(case when result = 'success' and action = 'scores_coral_level_2' then action else null end)/ count(distinct match_no) as scores_coral_level_2, count(case when result = 'success' and action = 'scores_coral_level_3' then action else null end)/ count(distinct match_no) as scores_coral_level_3, count(case when result = 'success' and action = 'scores_coral_level_4' then action else null end)/ count(distinct match_no) as scores_coral_level_4 FROM `scouting_submissions` group by robot
+
+
+    ) AS subquery ON rc.robot = subquery.robot
+    SET 
+
+
+rc.level1_avg_attempts=subquery.scores_coral_level_1,
+rc.level2_avg_attempts=subquery.scores_coral_level_2,
+rc.level3_avg_attempts=subquery.scores_coral_level_3,
+rc.level4_avg_attempts=subquery.scores_coral_level_4,
+
+
+rc.algae_net_avg_attempts=subquery.scores_algae_net,
+rc.algae_processor_avg_attempts=subquery.scores_algae_processor
+
+");
 
 
 
@@ -311,10 +348,7 @@ $pdo->exec("
 
 
 
-
-
-
-    // Step 11: Fetch Final Data
+    // Step 12: Fetch Final Data
     if ($match_number === 'all') {
         $robot_query = $pdo->prepare("
             SELECT DISTINCT robot 
