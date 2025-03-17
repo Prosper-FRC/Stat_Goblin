@@ -389,10 +389,10 @@
                         <div class="button algae circle"  data-action="scores_algae_processor">Pro
                         </div>
                     </div>
-                    <div class="button opponent fontBig" data-action="plays_defense">Plays Defense
+                    <div class="button opponent fontBig" data-action="plays_defense">Crosses Field
                         <img class="icon" src="/../stat_goblin/icons/shield_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
-                    <div class="button opponent fontBig" data-action="attempts_to_steal">Steal
+                    <div class="button opponent fontBig" data-action="attempts_to_steal">Blocks
                         <img class="icon" src="/../stat_goblin/icons/encrypted_minus_circle_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg" alt="Exclamation Icon">
                     </div>
                     <div class="button alliance fontBig" data-action="attempts_shallow_climb">Shallow Climb
