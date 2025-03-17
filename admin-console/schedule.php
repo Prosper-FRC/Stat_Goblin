@@ -15,10 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file']) && $_FIL
     $importedData = [];
     $table = '';
 
-    if (($handle = fopen($csvFile, "r")) !== false) {
-        // Read the header row and trim whitespace
-        $header = fgetcsv($handle, 1000, ",");
-        $header = array_map('trim', $header);
+ if (($handle = fopen($csvFile, "r")) !== false) {
+    // Read the header row and trim whitespace
+$header = fgetcsv($handle, 1000, ",");
+$header = array_map('trim', $header);
+$header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+print_r($header); // Debug: view the header array
 
         // Define expected headers for the two CSV formats
         $expectedHeadersActiveEvent = ['event_name', 'match_number', 'red1', 'red2', 'red3', 'blue1', 'blue2', 'blue3'];

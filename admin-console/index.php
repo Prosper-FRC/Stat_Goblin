@@ -463,7 +463,7 @@ width: 395px;
     let autoUnpauseTriggered = false;
     
     // Set your desired delay (in seconds) that the match should remain paused.
-    let delay = 3; // Example: 5-second pause
+    let delay = document.getElementById('delay').value;
 
     // Function to poll the server for the latest pause status.
     function updatePauseStatus() {
@@ -591,7 +591,7 @@ setTimeout(() => {
     }
 
     // Update the timer every second.
-    const timerInterval = setInterval(updateTimer, 1000);
+    const timerInterval = setInterval(updateTimer, 250);
     updateTimer();
 
 
