@@ -21,7 +21,7 @@ try {
             starting_position VARCHAR(30),
             auton_path VARCHAR(30),
             offense_score DECIMAL(5,2) DEFAULT 0,
-            defense_score INT DEFAULT 0,
+            defense_score DECIMAL(5,2) DEFAULT 0,
             auton_score INT DEFAULT 0,
             cooperative_score DECIMAL(5,2) DEFAULT 0,
             top_scoring_location VARCHAR(30),
@@ -46,7 +46,9 @@ try {
 
             algae_processor_attempts INT DEFAULT 0,
             algae_processor_success INT DEFAULT 0,
-            algae_processor_avg_attempts  DECIMAL(5,2) DEFAULT 0
+            algae_processor_avg_attempts  DECIMAL(5,2) DEFAULT 0,
+            high_score  INT DEFAULT 0,
+            high_score_match  INT DEFAULT 0
         )
     ");
 
@@ -84,10 +86,10 @@ try {
     $pdo->exec("
         UPDATE temp_robot_categories rc
         JOIN (
-            SELECT robot, COUNT(*) AS defense_score
+            SELECT robot, COUNT(*) / count(distinct match_no) AS defense_score
             FROM scouting_submissions
             WHERE event_name = '$event_name'
-              AND action IN ('plays_defense', 'attempts_to_descore')
+              AND action IN ('plays_defense', 'block')
             GROUP BY robot
         ) AS defense_data ON rc.robot = defense_data.robot
         SET rc.defense_score = defense_data.defense_score
@@ -99,7 +101,7 @@ try {
             SELECT robot, COUNT(*) AS auton_score
             FROM scouting_submissions
             WHERE event_name = '$event_name'
-              AND time_sec <= 18 AND result = 'success'
+              AND time_sec <= 15 AND result = 'success'
             GROUP BY robot
         ) AS auton_data ON rc.robot = auton_data.robot
         SET rc.auton_score = auton_data.auton_score
@@ -315,8 +317,73 @@ $pdo->exec("
     UPDATE temp_robot_categories rc
     JOIN (
        
-
-SELECT robot, count(case when result = 'success' and action = 'scores_algae_net' then action else null end)/ count(distinct match_no) as scores_algae_net, count(case when result = 'success' and action = 'scores_algae_processor' then action else null end)/ count(distinct match_no) as scores_algae_processor, count(case when result = 'success' and action = 'scores_coral_level_1' then action else null end)/ count(distinct match_no) as scores_coral_level_1, count(case when result = 'success' and action = 'scores_coral_level_2' then action else null end)/ count(distinct match_no) as scores_coral_level_2, count(case when result = 'success' and action = 'scores_coral_level_3' then action else null end)/ count(distinct match_no) as scores_coral_level_3, count(case when result = 'success' and action = 'scores_coral_level_4' then action else null end)/ count(distinct match_no) as scores_coral_level_4 FROM `scouting_submissions` group by robot
+SELECT
+   robot,
+   count(
+   case
+      when
+         result = 'success' 
+         and action = 'scores_algae_net' 
+      then
+         action 
+      else
+         null 
+   end
+) / count(distinct match_no) as scores_algae_net, count(
+   case
+      when
+         result = 'success' 
+         and action = 'scores_algae_processor' 
+      then
+         action 
+      else
+         null 
+   end
+) / count(distinct match_no) as scores_algae_processor, count(
+   case
+      when
+         result = 'success' 
+         and action = 'scores_coral_level_1' 
+      then
+         action 
+      else
+         null 
+   end
+) / count(distinct match_no) as scores_coral_level_1, count(
+   case
+      when
+         result = 'success' 
+         and action = 'scores_coral_level_2' 
+      then
+         action 
+      else
+         null 
+   end
+) / count(distinct match_no) as scores_coral_level_2, count(
+   case
+      when
+         result = 'success' 
+         and action = 'scores_coral_level_3' 
+      then
+         action 
+      else
+         null 
+   end
+) / count(distinct match_no) as scores_coral_level_3, count(
+   case
+      when
+         result = 'success' 
+         and action = 'scores_coral_level_4' 
+      then
+         action 
+      else
+         null 
+   end
+) / count(distinct match_no) as scores_coral_level_4 
+FROM
+   `scouting_submissions` 
+group by
+   robot
 
 
     ) AS subquery ON rc.robot = subquery.robot
@@ -336,7 +403,35 @@ rc.algae_processor_avg_attempts=subquery.scores_algae_processor
 
 
 
-    // Step 12: Fetch Final Data
+// Step 12: Fetch best match_no using a prepared statement
+$pdo->exec("
+    UPDATE temp_robot_categories rc
+    INNER JOIN (
+        SELECT robot, match_no, points
+        FROM (
+            SELECT robot, match_no, SUM(points) AS points,
+                   RANK() OVER (PARTITION BY robot ORDER BY SUM(points) DESC) AS rnk
+            FROM scouting_submissions
+            WHERE event_name = '$event_name'
+            GROUP BY robot, match_no
+        ) ranked
+        WHERE rnk = 1
+    ) AS subquery ON rc.robot = subquery.robot
+    SET 
+        rc.high_score = subquery.match_no,
+        rc.high_score_match = subquery.points
+");
+
+
+
+
+
+
+
+
+
+
+    // Step 13: Fetch Final Data
     $robot_query = $pdo->query("
         SELECT rc.*, 'n/a' as alliance
         FROM temp_robot_categories rc

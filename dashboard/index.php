@@ -707,6 +707,7 @@ function toggleRobotFilter(cardId) {
                 </tbody>
               </table>
             </div>
+          <h4>Highest Score: <span>${robot.high_score || 0} </span></h4> <h4>In match:<span> ${robot.high_score_match || 0} </span></h4>
           </div>
         `;
       });
