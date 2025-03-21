@@ -631,7 +631,7 @@ function throwCrazyConfetti() {
       // Start with a header/logo card and a prediction card
       let html = `
         <div class="robot-card logoCard" id="card_2">
-        <a href="..">  <img class="logo" src="../images/owlanalytics.png" alt="Logo"></a>
+        <a href="..">  <img class="logo" src="../images/owlAnalytics.png" alt="Logo"></a>
         </div>
         <div id="predictionCard" class="card robot-card prediction-card">
           <h3>Match Prediction</h3>
