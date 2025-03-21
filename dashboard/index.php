@@ -1013,7 +1013,7 @@ if (predictedWinner.toLowerCase().includes("blue")) {
 <body>
   <div class="containerOuter">
     <div class="container">
-      <a href=".."><img src="../images/owlanalytics.png" class="logo" alt="Logo"></a>
+      <a href=".."><img src="../images/owlAnalytics.png" class="logo" alt="Logo"></a>
       <!-- Grid for Dropdowns -->
       <div class="grid-container">
         <div class="grid-item">
