@@ -727,8 +727,15 @@ function playRandomSong() {
     { name: "Rondo Alla Turca", pattern: [400, 200, 400, 200, 400, 400] },
     { name: "Hungarian Dance", pattern: [600, 200, 600, 200, 600, 600] },
     { name: "Liberty Bell March", pattern: [400, 400, 400, 800] },
-    { name: "Pink Panther", pattern: [300, 300, 300, 600, 300, 300] }
+    { name: "Mahna Mahna", pattern: [300, 150, 300, 150, 300, 500, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100] },
+  { name: "Pink Panther", pattern: [300, 300, 300, 600, 300, 300] },
+  { name: "Opening Theme Song", pattern: [300, 100, 300, 100, 300, 300, 100, 100, 200, 100, 300, 400, 200, 100, 300, 100, 300, 300] }
   ];
+
+
+
+
+
 
   // Pick a random song from the array
   const randomSong = songs[Math.floor(Math.random() * songs.length)];
