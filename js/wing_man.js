@@ -319,7 +319,7 @@ async function fetchMatchData() {
 
 
 
-
+let playedSong = false;
 let confettiThrown = false;
             // Function to calculate and update the match timer
 
@@ -360,12 +360,23 @@ function updateMatchTimer() {
     timerTime = remainingSeconds;
 
 
+
+
+
     if (elapsedSeconds >= 150) {
         timerElement.textContent = "Finished";
         if (!confettiThrown) {
             throwCrazyConfetti();
             confettiThrown = true;
         }
+        if(!playedSong) {
+            playRandomSong();
+            playedSong = true;
+        }
+
+
+
+
         return;
     }
 
@@ -684,9 +695,48 @@ function checkServerConnectivity() {
 setInterval(checkServerConnectivity, 5000);
 
 
-function playVibrationSong(){
+function playRandomSong() {
 
+  const songs = [
+    { name: "Imperial March", pattern: [500, 200, 500, 200, 1000] },
+    { name: "Beethoven", pattern: [500, 500, 500, 1500] },
+    { name: "Mission Impossible", pattern: [100, 100, 100, 100, 100, 100] },
+    { name: "Jaws", pattern: [500, 1000, 500, 1000] },
+    { name: "We Will Rock You", pattern: [1000, 1000, 500] },
+    { name: "Twinkle Twinkle", pattern: [500, 500, 500, 500, 500, 500, 1000] },
+    { name: "Fur Elise", pattern: [300, 100, 300, 100, 300, 500] },
+    { name: "Chopin Nocturne", pattern: [400, 300, 400, 300, 600] },
+    { name: "Sabbath", pattern: [800, 200, 800, 200, 800, 200, 800, 400] },
+    { name: "Under Pressure", pattern: [500, 100, 500, 100, 1000, 100, 500, 100, 1000] },
+    { name: "Smoke on the Water", pattern: [600, 400, 600, 400, 600, 400, 1200] },
+    { name: "Sweet Child O' Mine", pattern: [700, 300, 700, 300, 700, 300, 1400] },
+    { name: "Back in Black", pattern: [800, 200, 800, 200, 800, 200, 1600] },
+    { name: "Stairway to Heaven", pattern: [1000, 500, 1000, 500, 2000] },
+    { name: "Enter Sandman", pattern: [400, 100, 400, 100, 400, 200] },
+    { name: "Happy Birthday", pattern: [300, 300, 300, 300, 600] },
+    { name: "Old McDonald", pattern: [500, 250, 500, 250, 500, 500] },
+    { name: "Mary Had a Little Lamb", pattern: [300, 150, 300, 150, 300, 300] },
+    { name: "Baa Baa Black Sheep", pattern: [400, 200, 400, 200, 400, 400] },
+    { name: "The Entertainer", pattern: [350, 150, 350, 150, 350, 350] },
+    { name: "Canon in D", pattern: [500, 250, 500, 250, 500, 500] },
+    { name: "Pachelbel's Canon", pattern: [450, 150, 450, 150, 450, 450] },
+    { name: "Swan Lake", pattern: [600, 300, 600, 300, 600, 600] },
+    { name: "Ride of the Valkyries", pattern: [700, 300, 700, 300, 700, 700] },
+    { name: "In the Hall of the Mountain King", pattern: [800, 400, 800, 400, 800, 800] },
+    { name: "Toccata and Fugue", pattern: [500, 100, 500, 100, 500, 500] },
+    { name: "Rondo Alla Turca", pattern: [400, 200, 400, 200, 400, 400] },
+    { name: "Hungarian Dance", pattern: [600, 200, 600, 200, 600, 600] },
+    { name: "Liberty Bell March", pattern: [400, 400, 400, 800] },
+    { name: "Pink Panther", pattern: [300, 300, 300, 600, 300, 300] }
+  ];
 
+  // Pick a random song from the array
+  const randomSong = songs[Math.floor(Math.random() * songs.length)];
+  console.log("Playing song:", randomSong.name);
 
-
+  // Play the vibration pattern once
+  navigator.vibrate(randomSong.pattern);
 }
+
+// Run the function once the DOM content is loaded
+document.addEventListener("DOMContentLoaded", playRandomSong);
