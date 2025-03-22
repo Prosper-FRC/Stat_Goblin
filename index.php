@@ -58,7 +58,7 @@
       /* For wider screens, switch to 5 columns */
       @media (min-width: 768px) {
       .grid-container {
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(3, 2fr);
       }
       }
       .grid-item {
@@ -108,6 +108,12 @@
             <label for="eventDropdown"><strong>Owl Upload:</strong></label>
             <a href ="admin-console/schedule.php"><img class="icon" src="icons/upload.png" alt="scouter app"></a>
           </div>
+
+          <div class="grid-item">
+            <label for="eventDropdown"><strong>Hey! It's a chart:</strong></label>
+            <a href ="dashboard/charts.php"><img class="icon" src="icons/heyitsachart.png" alt="Admin Console" ></a>
+          </div>
+
         </div>
       </div>
     </div>
