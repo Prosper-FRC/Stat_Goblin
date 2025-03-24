@@ -180,7 +180,7 @@
               },
               title: {
                 display: true,
-                text: 'Points by Match Rank'
+                text: 'Metrics by Match'
               },
               legend: {
                 display: true,
