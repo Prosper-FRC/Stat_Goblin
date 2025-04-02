@@ -450,7 +450,42 @@ width: 395px;
     <div id="blue3">Blue 3</div>
 </div>
 
+
+
+
+
+<!-- Button to trigger the popup -->
+<button onclick="openForm()">Open Scouting Form</button>
+
+<!-- Modal container -->
+<div id="scoutingModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); z-index:1000;">
+    <div style="position:relative; width:90%; max-width:700px; margin:5% auto; background:#222; padding:20px; border-radius:8px;">
+        <span onclick="closeForm()" style="position:absolute; top:10px; right:15px; font-size:20px; color:white; cursor:pointer;">&times;</span>
+        <iframe src="scouting_form.php" style="width:100%; height:600px; border:none;"></iframe>
+    </div>
+</div>
+
+
 <script>
+function openForm() {
+    document.getElementById("scoutingModal").style.display = "block";
+}
+function closeForm() {
+    document.getElementById("scoutingModal").style.display = "none";
+}
+</script>
+
+
+<script>
+
+
+
+
+
+
+
+
+    
     // These variables are initialized from your server data.
     let startTime = <?= json_encode($activeMatch['start_time'] ?? null) ?>;
     let totalPause = <?= json_encode($activeMatch['total_pause_duration'] ?? 0) ?>;
