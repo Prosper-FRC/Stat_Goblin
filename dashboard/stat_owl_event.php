@@ -391,7 +391,54 @@ $pdo->exec("
         $pdo->commit();
         
         // Retrieve final results
-        $stmt = $pdo->query("SELECT * FROM temp_robot_categories");
+        $stmt = $pdo->query("
+
+
+            SELECT 
+
+
+
+
+robot,
+seconds_per_score,
+cooperative_score  ,
+auton_score ,
+defense_score ,
+offense_score   ,
+
+ 
+top_scoring_location ,  
+match_count ,
+count_level_1 as level_1_scores,  
+count_level_2 as level_2_scores ,    
+count_level_3 as level_3_scores ,    
+count_level_4 as level_4_scores ,    
+IF(level1_attempts > 0, ROUND((count_level_1 / level1_attempts) * 100, 2), 0) AS level_1_scoring_rate,
+IF(level2_attempts > 0, ROUND((count_level_2 / level2_attempts) * 100, 2), 0) AS level_2_scoring_rate,
+IF(level3_attempts > 0, ROUND((count_level_3 / level3_attempts) * 100, 2), 0) AS level_3_scoring_rate,
+IF(level4_attempts > 0, ROUND((count_level_4 / level4_attempts) * 100, 2), 0) AS level_4_scoring_rate,
+
+algae_net_success  as algae_net_scores, 
+IF(algae_net_attempts > 0, ROUND((algae_net_success / algae_net_attempts) * 100, 2), 0) AS algae_net_scoring_rate,
+
+
+
+algae_net_avg_attempts  ,
+
+
+algae_processor_success,
+
+IF(algae_processor_attempts > 0, ROUND((algae_processor_success / algae_processor_attempts) * 100, 2), 0) AS algae_processor_scoring_rate,
+
+algae_processor_avg_attempts  ,  
+high_score ,
+high_score_match    
+
+
+
+
+
+            FROM temp_robot_categories");
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (PDOException $e) {
@@ -479,6 +526,7 @@ $pdo->exec("
 }
 
 select{min-width: 300px}
+a{color:#fff}
 
   </style>
 </head>
@@ -508,15 +556,23 @@ if ($selected_event): ?>
             <?php endforeach; ?>
           </tr>
         </thead>
-        <tbody>
-          <?php foreach ($results as $row): ?>
-            <tr>
-              <?php foreach ($row as $cell): ?>
-                <td><?= htmlspecialchars($cell) ?></td>
-              <?php endforeach; ?>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
+<tbody>
+    <?php foreach ($results as $row): ?>
+        <tr>
+            <?php foreach ($row as $col => $cell): ?>
+                <td>
+                    <?php if ($col === 'robot'): ?>
+                        <a href="https://www.thebluealliance.com/team/<?= htmlspecialchars($cell) ?>" target="_blank">
+                            <?= htmlspecialchars($cell) ?>
+                        </a>
+                    <?php else: ?>
+                        <?= htmlspecialchars($cell) ?>
+                    <?php endif; ?>
+                </td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
+</tbody>
       </table>
     <?php else: ?>
       <p>No data available for this event.</p>
