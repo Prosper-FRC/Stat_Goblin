@@ -109,9 +109,13 @@
             <a href ="admin-console/schedule.php"><img class="icon" src="icons/upload.png" alt="scouter app"></a>
           </div>
 
-          <div class="grid-item">
-            <label for="eventDropdown"><strong>Hey! It's a chart:</strong></label>
-            <a href ="dashboard/charts.php"><img class="icon" src="icons/heyitsachart.png" alt="Admin Console" ></a>
+
+
+
+
+             <div class="grid-item">
+            <label for="eventDropdown"><strong>Talon Tables:</strong></label>
+            <a href ="dashboard/stat_owl_event.php"><img class="icon" src="icons/table.png" alt="event Table" ></a>
           </div>
 
         </div>

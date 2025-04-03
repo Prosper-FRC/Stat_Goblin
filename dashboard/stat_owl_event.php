@@ -524,14 +524,99 @@ high_score_match
 #resultsTable tr.highlight {
     background-color: #555; /* Adjust to your desired highlight color */
 }
-
+      .icon {
+      width: 80px;
+      }
 select{min-width: 300px}
 a{color:#fff}
 
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5); /* Semi-transparent background */
+  }
+  .modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%; /* Adjust width as needed */
+    max-width: 1000px;
+    border-radius: 5px;
+    position: relative;
+  }
+  .close {
+    color: #aaa;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+  }
+         @font-face {
+            font-family: 'Roboto';
+            src: url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/roboto/Roboto-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Griffy';
+            src: url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Griffy/Griffy-Regular.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            @font-face {
+            font-family: 'Comfortaa';
+            src: url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf'),
+            url('/../stat_goblin/fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('ttf');
+            font-weight: normal;
+            font-style: normal;
+            }
+            /* Global Styles */
+      
+            body, html {
+            font-family: 'Comfortaa', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #222;
+      color: #eee;
+      line-height: 1.5;
+      text-align: center;
+    }
+        .logo {
+            width: 100%;
+            max-width: 400px;
+            display: block;
+            margin: 0 auto 1rem auto;
+        }
+
+
   </style>
+
+
+
 </head>
 <body>
-  <h1>The Stat Owl - Event Analysis</h1>
+
+      <a href="..">
+        <img src="../images/theStatOwl.png" class="logo" alt="Logo">
+    </a>
+
   <form method="get" action="">
     <label for="event_name"></label>
     <select name="event_name" id="event_name">
@@ -543,6 +628,33 @@ a{color:#fff}
       <?php endforeach; ?>
     </select>
     <input type="submit" value="Analyze">
+
+
+
+      <!-- Your grid item with the chart link -->
+<div class="grid-item">
+  <label for="eventDropdown"><strong></strong></label>
+
+
+  <!-- Change the href to '#' and give the link an id -->
+  <a href="#" id="openChart">
+    <img class="icon" src="../icons/heyitsachart.png" alt="Admin Console">
+  </a>
+</div>
+
+<!-- Modal Markup -->
+<div id="chartModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <!-- Iframe will load charts.php -->
+    <iframe src="" id="chartIframe" frameborder="0" style="width:100%; height:80vh;"></iframe>
+  </div>
+</div>
+
+
+
+
+
   </form>
   <?php $selected_event = isset($_GET['event_name']) ? $_GET['event_name'] : '';
 if ($selected_event): ?>
@@ -631,5 +743,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   </script>
+
+
+
+
+  <script>
+  // When the user clicks the chart link, open the modal and load charts.php into the iframe
+  document.getElementById('openChart').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('chartIframe').src = 'charts.php';
+      document.getElementById('chartModal').style.display = 'block';
+  });
+
+  // Get the <span> element that closes the modal
+  const closeBtn = document.querySelector('.close');
+  closeBtn.addEventListener('click', function() {
+      document.getElementById('chartModal').style.display = 'none';
+      // Optionally clear the iframe src if you want to reset the page
+      document.getElementById('chartIframe').src = '';
+  });
+
+  // When the user clicks outside of the modal content, close the modal
+  window.addEventListener('click', function(e) {
+      const modal = document.getElementById('chartModal');
+      if (e.target === modal) {
+          modal.style.display = 'none';
+          document.getElementById('chartIframe').src = '';
+      }
+  });
+</script>
 </body>
 </html>
