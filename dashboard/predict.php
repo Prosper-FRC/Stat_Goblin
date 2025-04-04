@@ -6,7 +6,8 @@ $event_name = isset($_GET['event_name']) ? $_GET['event_name'] : '';
 $match_no = isset($_GET['match_no']) ? $_GET['match_no'] : '';
 $blue_alliance = isset($_GET['blue_alliance']) ? $_GET['blue_alliance'] : '';
 $red_alliance = isset($_GET['red_alliance']) ? $_GET['red_alliance'] : '';
-$hist_weight = isset($_GET['hist_weight']) ? $_GET['hist_weight'] : 0.5;
+$hist_weight = isset($_GET['hist_weight']) ? $_GET['hist_weight'] : 0.1;
+$hist_weight = .1;
 
 // Validate required parameters
 if (empty($event_name) || empty($match_no) || empty($blue_alliance) || empty($red_alliance)) {

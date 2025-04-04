@@ -339,7 +339,7 @@ def predict():
         print("Blue Alliance:", blue_alliance)
         print("Red Alliance:", red_alliance)
         
-        hist_weight = float(request.args.get('hist_weight', 0.5))
+        hist_weight = float(request.args.get('hist_weight', 0.2))
         hist_weight = max(0.0, min(1.0, hist_weight))
         
         # Load aggregated scouting data from scouting_submissions

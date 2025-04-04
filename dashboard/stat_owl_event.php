@@ -363,83 +363,67 @@ $pdo->exec("
 
 
         // seconds_per_score using CTE
-        $pdo->exec("
-            WITH time_differences AS (
-                SELECT match_no, robot, time_sec,
-                       LAG(time_sec) OVER (PARTITION BY match_no, robot ORDER BY time_sec) AS prev_time
-                FROM scouting_submissions 
-                WHERE time_sec < 140
-                ORDER BY match_no, robot, time_sec
-            ),
-            time_differences2 AS (
-                SELECT match_no, robot, AVG(time_sec - prev_time) AS avg_time_diff
-                FROM time_differences
-                WHERE prev_time IS NOT NULL
-                GROUP BY match_no, robot
-            ),
-            score_data AS (
-                SELECT robot, AVG(avg_time_diff) AS seconds_per_score
-                FROM time_differences2
-                GROUP BY robot
-            )
-            UPDATE temp_robot_categories rc
-            JOIN score_data sd ON rc.robot = sd.robot
-            SET rc.seconds_per_score = sd.seconds_per_score
-        ");
 
-        // Commit transaction
-        $pdo->commit();
-        
-        // Retrieve final results
-        $stmt = $pdo->query("
+$pdo->exec("
+DROP TEMPORARY TABLE IF EXISTS score_data;
+CREATE TEMPORARY TABLE score_data AS
+WITH time_differences AS (
+    SELECT match_no, robot, time_sec,
+           LAG(time_sec) OVER (PARTITION BY match_no, robot ORDER BY time_sec) AS prev_time
+    FROM scouting_submissions 
+    WHERE time_sec < 140
+    ORDER BY match_no, robot, time_sec
+),
+time_differences2 AS (
+    SELECT match_no, robot, AVG(time_sec - prev_time) AS avg_time_diff
+    FROM time_differences
+    WHERE prev_time IS NOT NULL
+    GROUP BY match_no, robot
+),
+score_data_cte AS (
+    SELECT robot, AVG(avg_time_diff) AS seconds_per_score
+    FROM time_differences2
+    GROUP BY robot
+)
+SELECT * FROM score_data_cte;
+UPDATE temp_robot_categories rc
+JOIN score_data sd ON rc.robot = sd.robot
+SET rc.seconds_per_score = sd.seconds_per_score;
+");
 
+$pdo->commit();
 
-            SELECT 
+// Retrieve final results
+$stmt = $pdo->query("
+    SELECT 
+        robot,
+        seconds_per_score,
+        cooperative_score,
+        auton_score,
+        defense_score,
+        offense_score,
+        top_scoring_location,
+        match_count,
+        count_level_1 AS level_1_scores,
+        count_level_2 AS level_2_scores,
+        count_level_3 AS level_3_scores,
+        count_level_4 AS level_4_scores,
+        IF(level1_attempts > 0, ROUND((count_level_1 / level1_attempts) * 100, 2), 0) AS level_1_scoring_rate,
+        IF(level2_attempts > 0, ROUND((count_level_2 / level2_attempts) * 100, 2), 0) AS level_2_scoring_rate,
+        IF(level3_attempts > 0, ROUND((count_level_3 / level3_attempts) * 100, 2), 0) AS level_3_scoring_rate,
+        IF(level4_attempts > 0, ROUND((count_level_4 / level4_attempts) * 100, 2), 0) AS level_4_scoring_rate,
+        algae_net_success AS algae_net_scores,
+        IF(algae_net_attempts > 0, ROUND((algae_net_success / algae_net_attempts) * 100, 2), 0) AS algae_net_scoring_rate,
+        algae_net_avg_attempts,
+        algae_processor_success,
+        IF(algae_processor_attempts > 0, ROUND((algae_processor_success / algae_processor_attempts) * 100, 2), 0) AS algae_processor_scoring_rate,
+        algae_processor_avg_attempts,
+        high_score,
+        high_score_match
+    FROM temp_robot_categories
+");
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-
-
-robot,
-seconds_per_score,
-cooperative_score  ,
-auton_score ,
-defense_score ,
-offense_score   ,
-
- 
-top_scoring_location ,  
-match_count ,
-count_level_1 as level_1_scores,  
-count_level_2 as level_2_scores ,    
-count_level_3 as level_3_scores ,    
-count_level_4 as level_4_scores ,    
-IF(level1_attempts > 0, ROUND((count_level_1 / level1_attempts) * 100, 2), 0) AS level_1_scoring_rate,
-IF(level2_attempts > 0, ROUND((count_level_2 / level2_attempts) * 100, 2), 0) AS level_2_scoring_rate,
-IF(level3_attempts > 0, ROUND((count_level_3 / level3_attempts) * 100, 2), 0) AS level_3_scoring_rate,
-IF(level4_attempts > 0, ROUND((count_level_4 / level4_attempts) * 100, 2), 0) AS level_4_scoring_rate,
-
-algae_net_success  as algae_net_scores, 
-IF(algae_net_attempts > 0, ROUND((algae_net_success / algae_net_attempts) * 100, 2), 0) AS algae_net_scoring_rate,
-
-
-
-algae_net_avg_attempts  ,
-
-
-algae_processor_success,
-
-IF(algae_processor_attempts > 0, ROUND((algae_processor_success / algae_processor_attempts) * 100, 2), 0) AS algae_processor_scoring_rate,
-
-algae_processor_avg_attempts  ,  
-high_score ,
-high_score_match    
-
-
-
-
-
-            FROM temp_robot_categories");
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (PDOException $e) {
     // Rollback if there was an error
