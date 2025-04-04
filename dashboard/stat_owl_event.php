@@ -327,8 +327,8 @@ try {
                 ) ranked
                 WHERE rn = 1
             ) AS subquery ON rc.robot = subquery.robot
-            SET rc.high_score = subquery.match_no,
-                rc.high_score_match = subquery.points
+            SET rc.high_score = subquery.points,
+                rc.high_score_match = subquery.match_no
         ");
 
 
