@@ -132,7 +132,7 @@ print_r($header); // Debug: view the header array
                 $pdo->quote($row["timestamp"]) .
             ")";
         }
-        $pdo->exec("DELETE FROM scouting_submissions");
+       # $pdo->exec("DELETE FROM scouting_submissions");
 
 $sqlInsert = "INSERT INTO scouting_submissions 
     (id, ip_address, event_name, match_no, time_sec, robot, alliance, action, location, result, points, timestamp) VALUES " 

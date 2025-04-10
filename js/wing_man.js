@@ -55,13 +55,13 @@
                "starting_position_2":0,
                "starting_position_3":0,
                "picks_up_color":0,
-               "scores_coral_level_1": 2,
+               "scores_coral_level_1": 3,
                "scores_coral_level_2": 4,
                "scores_coral_level_3": 6,
-               "scores_coral_level_4": 8,
+               "scores_coral_level_4": 7,
                "picks_up_algae": 0,
-               "scores_algae_net": 8,
-               "scores_algae_processor": 12,
+               "scores_algae_net": 4,
+               "scores_algae_processor": 6,
                "attempts_shallow_climb": 0, // Typically endgame, but zeroed out here
                "attempts_deep_climb": 0, // Typically endgame, but zeroed out here
                "attempts_parked": 0,     // Typically endgame, but zeroed out here
@@ -87,10 +87,10 @@
 
 
                "picks_up_coral": {"location": "station", "points": 0},
-               "scores_coral_level_1": { "location": "reef", "points": 1 },
-               "scores_coral_level_2": { "location": "reef", "points": 2 },
-               "scores_coral_level_3": { "location": "reef", "points": 3 },
-               "scores_coral_level_4": { "location": "reef", "points": 4 },
+               "scores_coral_level_1": { "location": "reef", "points": 2 },
+               "scores_coral_level_2": { "location": "reef", "points": 3 },
+               "scores_coral_level_3": { "location": "reef", "points": 4 },
+               "scores_coral_level_4": { "location": "reef", "points": 5 },
                "picks_up_algae": { "location": "mid_field", "points": 0 },
                "scores_algae_net": { "location": "net", "points": 4 },
                "scores_algae_processor": { "location": "processor", "points": 6 },

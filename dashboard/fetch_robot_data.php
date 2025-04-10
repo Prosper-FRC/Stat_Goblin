@@ -48,7 +48,8 @@ try {
             algae_processor_success INT DEFAULT 0,
             algae_processor_avg_attempts DECIMAL(5,2) DEFAULT 0,
             high_score INT DEFAULT 0,
-            high_score_match INT DEFAULT 0
+            high_score_match INT DEFAULT 0,
+            seconds_per_score DECIMAL(5,2) DEFAULT 0
         )
     ");
 

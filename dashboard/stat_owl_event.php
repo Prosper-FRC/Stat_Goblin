@@ -674,6 +674,9 @@ if ($selected_event): ?>
       <p>No data available for this event.</p>
     <?php endif; ?>
   <?php endif; ?>
+<?php if ($results): ?>
+  <button id="exportButton" style="display:none; margin-top: 20px;">Export to CSV</button>
+<?php endif; ?>
 
   <script>
     // Vanilla JS table sorting:
@@ -723,7 +726,42 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+// Show the button if table is visible
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("resultsTable");
+    const exportBtn = document.getElementById("exportButton");
+    if (table && exportBtn) {
+        exportBtn.style.display = "inline-block";
+        exportBtn.addEventListener("click", function () {
+            exportTableToCSV('event_results.csv');
+        });
+    }
+});
 
+function exportTableToCSV(filename) {
+    const table = document.getElementById("resultsTable");
+    const rows = table.querySelectorAll("tr");
+    let csv = [];
+
+    rows.forEach(row => {
+        let cols = row.querySelectorAll("th, td");
+        let rowData = Array.from(cols).map(col => {
+            let data = col.textContent.replace(/"/g, '""'); // Escape double quotes
+            return `"${data}"`;
+        });
+        csv.push(rowData.join(","));
+    });
+
+    // Create a blob and trigger download
+    const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+    const tempLink = document.createElement("a");
+    tempLink.download = filename;
+    tempLink.href = URL.createObjectURL(csvFile);
+    tempLink.style.display = "none";
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    document.body.removeChild(tempLink);
+}
 
 
   </script>
