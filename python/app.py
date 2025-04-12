@@ -279,6 +279,29 @@ def estimate_robot_performance(robot_id, global_avgs):
         "algae_count": 0
     }
 
+
+
+def load_autonomous_scores(event):
+    conn = get_db_connection()
+    query = """
+        SELECT robot, MAX(auton_score) AS auton_score
+        FROM (
+            SELECT robot, match_no, COUNT(action) AS auton_score
+            FROM scouting_submissions
+            WHERE event_name = %s 
+              AND time_sec <= 15 
+              AND action LIKE %s
+              AND result = 'success'
+            GROUP BY robot, match_no
+        ) AS auto_scores
+        GROUP BY robot;
+    """
+    # Provide both parameters: event and the LIKE pattern.
+    df = pd.read_sql(query, conn, params=(event, '%score%',))
+    conn.close()
+    return df
+
+
 def balanced_robot_prediction(robot_id, robot_perf, best_rf, hist_weight, global_avgs):
     robot_id = str(robot_id).strip()
     if robot_id not in robot_perf["robot"].astype(str).values:
@@ -347,6 +370,7 @@ def generate_candidate_explanation(candidate_row, candidate_score, candidate_cyc
 # API ENDPOINT FOR /analyze
 #############################################
 @app.route("/analyze", methods=["GET"])
+
 def analyze():
     try:
         event = request.args.get("event")
@@ -355,8 +379,19 @@ def analyze():
         if not event or not robot or not event_key:
             return jsonify({"error": "Missing one or more parameters: event, robot, event_key."}), 400
 
+        # Existing: Load historical scouting data for the event.
         data = load_historical_data(event)
+        
+        # Existing: Aggregate the data.
         robot_perf, match_level = aggregate_data(data)
+        
+        # ---- NEW STEP: Load and merge autonomous scores ----
+        auto_scores = load_autonomous_scores(event)
+        robot_perf = pd.merge(robot_perf, auto_scores, on="robot", how="left")
+        # Fill missing auton_score values with 0 (or another default you prefer)
+        robot_perf["auton_score"] = robot_perf["auton_score"].fillna(0)
+        # -------------------------------------------------------
+
         best_rf = train_model(robot_perf)
         global_avgs = {
             "avg_points_per_match": robot_perf["avg_points_per_match"].mean(),
@@ -368,16 +403,12 @@ def analyze():
         if robot not in robot_perf["robot"].astype(str).values:
             return jsonify({"error": f"Robot {robot} not found in aggregated data."}), 400
         
-        # Omit the selected robot's profile from output.
-        # We are removing the selected robot section entirely.
-        
         user_most_common_action = robot_perf[robot_perf["robot"].astype(str) == robot].iloc[0].get("most_common_action", "Unknown")
         user_cycle = robot_perf[robot_perf["robot"].astype(str) == robot].iloc[0].get("baseline_cycle", 0.0)
         
         def_effects = compute_defensive_effects(match_level, robot_perf)
         
         candidate_details = []
-        # Build full candidate analysis list (including algae info in the explanation).
         for candidate in robot_perf["robot"].astype(str).values:
             candidate_row = robot_perf[robot_perf["robot"].astype(str) == candidate].iloc[0].to_dict()
             cand_score = balanced_robot_prediction(candidate, robot_perf, best_rf, 0.5, global_avgs)
@@ -407,10 +438,12 @@ def analyze():
                 "def_effect_cycle": cand_def_effect_cycle,
                 "def_effect_points": cand_def_effect_points,
                 "explanation": explanation,
-                "algae_count": candidate_row.get("algae_count", 0)
+                "algae_count": candidate_row.get("algae_count", 0),
+                # Optionally, include the new autonomous score in your output:
+                "auton_score": candidate_row.get("auton_score", 0)
             })
         
-        # For recommendation lists, remove algae info.
+        # Continue with candidate filtering and recommendations...
         def remove_algae_info(candidate):
             new_candidate = candidate.copy()
             new_candidate.pop("algae_count", None)
@@ -429,19 +462,13 @@ def analyze():
         second_pick_offense.sort(key=lambda x: x["predicted_avg_pts_per_match"], reverse=True)
         second_pick_offense = second_pick_offense[:8]
         
-        # Filtering the candidate list for defensive options
         defense_options = [
             remove_algae_info(c) for c in candidate_details
             if c.get("ranking") is not None and int(c["ranking"]) >= 14 and c["robot"] != robot
         ]
-        
-        # Since a more negative value means a better point reduction, sort in ascending order.
         defense_options.sort(key=lambda x: x["def_effect_points"])
-        
-        # Select the top 8 teams with the best (most negative) Defensive Effect: Points Reduction.
         defense_options = defense_options[:8]
 
-        
         candidate_details.sort(key=lambda x: int(x['ranking']) if x.get('ranking') is not None and str(x['ranking']).isdigit() else 9999)
         
         output = {
@@ -460,6 +487,7 @@ def analyze():
         error_details = traceback.format_exc()
         app.logger.error("Error in /analyze endpoint:\n" + error_details)
         return jsonify({"error": str(e), "trace": error_details}), 500
+
 
 if __name__ == '__main__':
     app.run(port=9105, debug=True)

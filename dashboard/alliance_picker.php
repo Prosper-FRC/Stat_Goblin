@@ -377,6 +377,14 @@ This multi-step approach leverages both the historical performance data and the 
             Cycle Time (sec)
             <span class="info-icon" data-definition="Cycle time: estimated as 150 / (scoring_events) for a match, assuming a fixed match duration (150 seconds). This acts as a rough proxy for how quickly a robot scores." style="cursor: pointer;">[i]</span>
         </th>
+
+<th>
+    Auton Score
+    <span class="info-icon" data-definition="Autonomous Score: The maximum count of successful scoring actions during the autonomous period (<=15 sec) per match. It indicates the robot's early-game performance." style="cursor: pointer;">[i]</span>
+</th>
+
+
+
         <th>
             Favorite Scoring
             <span class="info-icon" data-definition="The scoring action most frequently performed by the team." style="cursor: pointer;">[i]</span>
@@ -403,6 +411,8 @@ This multi-step approach leverages both the historical performance data and the 
                       <td><?php echo htmlspecialchars($opt['ranking']); ?></td>
                       <td><?php echo number_format($opt['predicted_avg_pts_per_match'], 2); ?></td>
                       <td><?php echo number_format($opt['baseline_cycle'], 2); ?></td>
+                      <td><?php echo number_format($opt['auton_score'], 2); ?></td>
+
                       <td><?php echo htmlspecialchars($opt['most_common_action']); ?></td>
                   
                   </tr>
@@ -434,6 +444,14 @@ This multi-step approach leverages both the historical performance data and the 
             Cycle Time (sec)
             <span class="info-icon" data-definition="Cycle time: estimated as 150 / (scoring_events) for a match, assuming a fixed match duration (150 seconds). This acts as a rough proxy for how quickly a robot scores." style="cursor: pointer;">[i]</span>
         </th>
+
+<th>
+    Auton Score
+    <span class="info-icon" data-definition="Autonomous Score: The maximum count of successful scoring actions during the autonomous period (<=15 sec) per match. It indicates the robot's early-game performance." style="cursor: pointer;">[i]</span>
+</th>
+
+
+
         <th>
             Favorite Scoring
             <span class="info-icon" data-definition="The scoring action most frequently performed by the team." style="cursor: pointer;">[i]</span>
@@ -459,6 +477,7 @@ This multi-step approach leverages both the historical performance data and the 
                       <td><?php echo htmlspecialchars($opt['ranking']); ?></td>
                       <td><?php echo number_format($opt['predicted_avg_pts_per_match'], 2); ?></td>
                       <td><?php echo number_format($opt['baseline_cycle'], 2); ?></td>
+                      <td><?php echo number_format($opt['auton_score'], 2); ?></td>
                       <td><?php echo htmlspecialchars($opt['most_common_action']); ?></td>
            
                   </tr>
@@ -466,7 +485,7 @@ This multi-step approach leverages both the historical performance data and the 
               </tbody>
           </table>
           
-          <!-- Defensive Options -->
+          <!-- Defensive Options  -->
           <h2>Defensive Options</h2>
           <table>
 <thead>
@@ -490,6 +509,10 @@ This multi-step approach leverages both the historical performance data and the 
             Cycle Time (sec)
             <span class="info-icon" data-definition="Cycle time: estimated as 150 / (scoring_events) for a match, assuming a fixed match duration (150 seconds). This acts as a rough proxy for how quickly a robot scores." style="cursor: pointer;">[i]</span>
         </th>
+        <th>
+    Auton Score
+    <span class="info-icon" data-definition="Autonomous Score: The maximum count of successful scoring actions during the autonomous period (<=15 sec) per match. It indicates the robot's early-game performance." style="cursor: pointer;">[i]</span>
+</th>
         <th>
             Defensive Impact (sec)
             <span class="info-icon" data-definition="Defensive Impact (sec)
@@ -568,6 +591,7 @@ is then averaged over the matches. This yields the Defensive Effect: Points Redu
                       <td><?php echo htmlspecialchars($opt['ranking']); ?></td>
                       <td><?php echo number_format($opt['predicted_avg_pts_per_match'], 2); ?></td>
                       <td><?php echo number_format($opt['baseline_cycle'], 2); ?></td>
+                      <td><?php echo number_format($opt['auton_score'], 2); ?></td>
 <td><?php echo number_format($opt['defensive_impact_delta'] ?? 0, 2); ?></td>
 <td><?php echo number_format($opt['def_effect_cycle'] ?? 0, 2); ?></td>
 <td><?php echo number_format($opt['def_effect_points'] ?? 0, 2); ?></td>
