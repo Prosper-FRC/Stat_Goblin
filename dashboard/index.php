@@ -704,6 +704,26 @@ function toggleRobotFilter(cardId) {
           <td>${robot.algae_processor_avg_attempts || 0}</td>
                     <td>${(robot.algae_processor_attempts > 0) ? ((robot.algae_processor_success / robot.algae_processor_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
                   </tr>
+
+                <!-- New Rows for Deep & Shallow Climb -->
+      <tr>
+        <td>Deep Climb</td>
+        <td>${robot.deep_climb_success || 0}</td>
+        <td>${robot.deep_climb_attempts || 0}</td>
+        <td>N/A</td>
+        <td>${(robot.deep_climb_attempts > 0) ? ((robot.deep_climb_success / robot.deep_climb_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
+      </tr>
+      <tr>
+        <td>Shallow Climb</td>
+        <td>${robot.shallow_climb_success || 0}</td>
+        <td>${robot.shallow_climb_attempts || 0}</td>
+        <td>${robot.shallow_climb_avg_attempts || 0}</td>
+        <td>${(robot.shallow_climb_attempts > 0) ? ((robot.shallow_climb_success / robot.shallow_climb_attempts) * 100).toFixed(1) + "%" : "0%"}</td>
+      </tr>
+
+
+
+
                 </tbody>
               </table>
             </div>

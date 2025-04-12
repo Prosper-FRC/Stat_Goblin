@@ -49,7 +49,18 @@ try {
             algae_processor_avg_attempts DECIMAL(5,2) DEFAULT 0,
             high_score INT DEFAULT 0,
             high_score_match INT DEFAULT 0,
-            seconds_per_score DECIMAL(5,2) DEFAULT 0
+            seconds_per_score DECIMAL(5,2) DEFAULT 0,
+
+            deep_climb_success INT DEFAULT 0,
+            deep_climb_attempts INT DEFAULT 0,
+          
+            
+            shallow_climb_success INT DEFAULT 0,
+            shallow_climb_attempts INT DEFAULT 0
+     
+
+
+
         )
     ");
 
@@ -88,11 +99,14 @@ try {
         // Autonomous Score
         "UPDATE temp_robot_categories rc
          JOIN (
-             SELECT robot, COUNT(*) AS auton_score
-             FROM scouting_submissions
-             WHERE event_name = ? 
-               AND time_sec <= 15 AND result = 'success'
-             GROUP BY robot
+             select robot, max(auton_score) as auton_score
+from
+(SELECT robot,match_no,  count(action)  AS auton_score
+            FROM scouting_submissions
+            WHERE event_name = ? AND time_sec <= 15 AND action like '%score%' and result = 'success'
+            GROUP BY robot, match_no 
+) AS auton_scores
+group by robot
          ) AS auton_data ON rc.robot = auton_data.robot
          SET rc.auton_score = auton_data.auton_score"
     ];
@@ -225,6 +239,78 @@ try {
         SET rc.algae_processor_success = proc_success.algae_processor_success
     ");
     $stmt->execute([$event_name]);
+
+ ///////////////////
+
+
+        // deep climb Attempts
+    $stmt = $pdo->prepare("
+        UPDATE temp_robot_categories rc
+        JOIN (
+            SELECT robot, COUNT(*) AS deep_climb_attempts
+            FROM scouting_submissions
+            WHERE event_name = ? 
+              AND action = 'attempts_deep_climb'
+            GROUP BY robot
+        ) AS deep_climb_attempts ON rc.robot = deep_climb_attempts.robot
+        SET rc.deep_climb_attempts =deep_climb_attempts.deep_climb_attempts
+    ");
+    $stmt->execute([$event_name]);
+
+    // Deep Climb Success
+    $stmt = $pdo->prepare("
+        UPDATE temp_robot_categories rc
+        JOIN (
+            SELECT robot, COUNT(*) AS deep_climb_success
+            FROM scouting_submissions
+            WHERE event_name = ? 
+              AND action = 'attempts_deep_climb'
+              AND result = 'success'
+            GROUP BY robot
+        ) AS deep_climb_success ON rc.robot = deep_climb_success.robot
+        SET rc.deep_climb_success = deep_climb_success.deep_climb_success
+    ");
+    $stmt->execute([$event_name]);
+
+
+
+        // shallow climb Attempts
+    $stmt = $pdo->prepare("
+        UPDATE temp_robot_categories rc
+        JOIN (
+            SELECT robot, COUNT(*) AS shallow_climb_attempts
+            FROM scouting_submissions
+            WHERE event_name = ? 
+              AND action = 'attempts_shallow_climb'
+            GROUP BY robot
+        ) AS shallow_climb_attempts ON rc.robot = shallow_climb_attempts.robot
+        SET rc.shallow_climb_attempts = shallow_climb_attempts.shallow_climb_attempts
+    ");
+    $stmt->execute([$event_name]);
+
+    // shallow Climb Success
+    $stmt = $pdo->prepare("
+        UPDATE temp_robot_categories rc
+        JOIN (
+            SELECT robot, COUNT(*) AS shallow_climb_success
+            FROM scouting_submissions
+            WHERE event_name = ? 
+              AND action = 'attempts_shallow_climb'
+              AND result = 'success'
+            GROUP BY robot
+        ) AS shallow_climb_success ON rc.robot = shallow_climb_success.robot
+        SET rc.shallow_climb_success = shallow_climb_success.shallow_climb_success
+    ");
+    $stmt->execute([$event_name]);
+
+
+
+
+
+
+
+
+
 
     // Step 9: Compute Cooperative Score (existing logic)
     $stmt = $pdo->prepare("

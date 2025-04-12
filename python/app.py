@@ -8,6 +8,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, RandomizedSearchCV
 from scipy.stats import randint
 import math
+import re
+import traceback
 
 app = Flask(__name__)
 
@@ -17,8 +19,31 @@ app = Flask(__name__)
 TBA_AUTH_KEY = "iPU2nNv1lDHD3m03JwnaqsCxsJhHLmXuRU0Te4xNoyBvOjxq5nYvsWlpd3bJH0kc"
 
 #############################################
-# Database Functions
+# HELPER: Get Team Nickname via TBA API (if needed)
 #############################################
+def get_team_nickname(teamNumber, auth_key):
+    teamKey = "frc" + str(teamNumber)
+    url = f"https://www.thebluealliance.com/api/v3/team/{teamKey}"
+    headers = {"X-TBA-Auth-Key": auth_key}
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return "Unknown"
+    data = response.json()
+    return data.get("nickname", "Unknown")
+
+#############################################
+# DATABASE FUNCTIONS
+#############################################
+def sanitize_output(data):
+    if isinstance(data, dict):
+        return {k: sanitize_output(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [sanitize_output(item) for item in data]
+    elif isinstance(data, float):
+        return None if math.isinf(data) else data
+    else:
+        return data
+
 def get_db_connection():
     return mysql.connector.connect(
         host='localhost',
@@ -26,12 +51,6 @@ def get_db_connection():
         password='pw123456',
         database='frc_scouting'
     )
-
-def get_unique_events():
-    conn = get_db_connection()
-    df = pd.read_sql("SELECT DISTINCT event_name FROM scouting_submissions", conn)
-    conn.close()
-    return df["event_name"].tolist()
 
 def load_historical_data(event_name):
     conn = get_db_connection()
@@ -43,19 +62,20 @@ def load_historical_data(event_name):
     data = pd.read_sql(query, conn, params=(event_name,))
     conn.close()
     data.columns = data.columns.str.strip()
+    data['points'] = pd.to_numeric(data['points'], errors='coerce')
     return data
 
 #############################################
-# Aggregation and Derived Metrics
+# AGGREGATION AND DERIVED METRICS
 #############################################
 def compute_linear_slope_and_next(xvals, yvals):
     if len(xvals) < 2:
         return 0.0, 0.0
     reg = LinearRegression()
-    reg.fit(np.array(xvals).reshape(-1,1), yvals)
+    reg.fit(np.array(xvals).reshape(-1, 1), yvals)
     slope = reg.coef_[0]
     intercept = reg.intercept_
-    return slope, slope * (max(xvals)+1) + intercept
+    return slope, slope * (max(xvals) + 1) + intercept
 
 def get_opponent_defense(row, def_flags):
     match = row["match_no"]
@@ -70,58 +90,84 @@ def get_opponent_defense(row, def_flags):
     return bool(series.iloc[0]) if not series.empty else False
 
 def aggregate_data(data):
-    # Group data at the match level:
-    match_points_df = (data.groupby(["match_no", "robot", "alliance"])["points"]
-                       .sum().reset_index().rename(columns={"points": "match_points"}))
-    data['is_scoring'] = data['points'].astype(float) > 0
+    # Group data at match level.
+    match_points_df = (
+        data.groupby(["match_no", "robot", "alliance"])["points"]
+            .sum().reset_index().rename(columns={"points": "match_points"})
+    )
+    
+    data['is_scoring'] = data['points'] > 0
     defensive_actions_list = {"block", "barge"}
     data['is_defensive'] = data['action'].str.lower().isin(defensive_actions_list)
     
-    events_df = (data.groupby(["match_no", "robot", "alliance"])
-                .agg(match_events=("result", "count"),
-                     scoring_events=("is_scoring", "sum"),
-                     defensive_events=("is_defensive", "sum")).reset_index())
-    temp_df = (data.assign(is_success=lambda df: df["result"]=="success")
-               .groupby(["match_no", "robot", "alliance"]).agg(match_successes=("is_success", "sum")).reset_index())
+    # Compute algae flag: row is flagged if points > 0 and action contains "algae"
+    data['algae_flag'] = data.apply(lambda r: (float(r['points']) > 0 and 'algae' in r['action'].lower()), axis=1)
+    
+    events_df = (
+        data.groupby(["match_no", "robot", "alliance"])
+            .agg(match_events=("result", "count"),
+                 scoring_events=("is_scoring", "sum"),
+                 defensive_events=("is_defensive", "sum"))
+            .reset_index()
+    )
+    temp_df = (
+        data.assign(is_success=lambda df: df["result"] == "success")
+            .groupby(["match_no", "robot", "alliance"])
+            .agg(match_successes=("is_success", "sum"))
+            .reset_index()
+    )
     
     match_level = pd.merge(match_points_df, events_df, on=["match_no", "robot", "alliance"], how="outer")
     match_level = pd.merge(match_level, temp_df, on=["match_no", "robot", "alliance"], how="outer")
-    match_level["match_success_rate"] = (match_level["match_successes"]/match_level["match_events"]).fillna(0.0)
+    match_level["match_success_rate"] = (match_level["match_successes"] / match_level["match_events"]).fillna(0.0)
     
     def compute_match_cycle_time(r):
         return 150 / r["scoring_events"] if r["scoring_events"] > 0 else math.inf
     match_level["match_cycle_time"] = match_level.apply(compute_match_cycle_time, axis=1)
     
-    # Set opponent defense flag.
-    def_flags = (match_level.groupby(["match_no", "alliance"])["defensive_events"]
-                 .max().reset_index().rename(columns={"defensive_events": "alliance_defense_flag"}))
+    def_flags = (
+        match_level.groupby(["match_no", "alliance"])["defensive_events"]
+            .max().reset_index().rename(columns={"defensive_events": "alliance_defense_flag"})
+    )
     def_flags["alliance_defense_flag"] = def_flags["alliance_defense_flag"] > 0
     def_flags["alliance_lower"] = def_flags["alliance"].apply(lambda x: str(x).lower())
     match_level["opponent_defense_flag"] = match_level.apply(lambda r: get_opponent_defense(r, def_flags), axis=1)
     
-    # Overall robot performance
-    robot_summary = (match_level.groupby("robot")["match_points"]
-                     .agg(total_points="sum", avg_points_per_match="mean", matches="count").reset_index())
-    robot_success_rate = (data.groupby("robot")["result"]
-                          .apply(lambda x: (x=="success").sum()/len(x) if len(x)>0 else 0)
-                          .reset_index(name="success_rate"))
+    # Compute overall robot performance.
+    robot_summary = (
+        match_level.groupby("robot")["match_points"]
+            .agg(total_points="sum", avg_points_per_match="mean", matches="count")
+            .reset_index()
+    )
+    robot_success_rate = (
+        data.groupby("robot")["result"]
+            .apply(lambda x: (x == "success").sum() / len(x) if len(x) > 0 else 0)
+            .reset_index(name="success_rate")
+    )
     robot_total_events = data.groupby("robot")["result"].count().reset_index(name="total_events")
-    robot_common_action = (data[data["points"].astype(float) > 0]
-                           .groupby("robot")["action"]
-                           .agg(lambda x: x.mode().iloc[0] if not x.mode().empty else "Unknown").reset_index(name="most_common_action"))
+    robot_common_action = (
+        data[data["points"] > 0]
+            .groupby("robot")["action"]
+            .agg(lambda x: x.mode().iloc[0] if not x.mode().empty else "Unknown")
+            .reset_index(name="most_common_action")
+    )
     robot_scoring = data.groupby("robot")["is_scoring"].sum().reset_index(name="total_scoring_events")
+    
+    robot_algae = data.groupby("robot")["algae_flag"].sum().reset_index(name="algae_count")
     
     robot_perf = pd.merge(robot_summary, robot_success_rate, on="robot", how="outer")
     robot_perf = pd.merge(robot_perf, robot_total_events, on="robot", how="outer")
     robot_perf = pd.merge(robot_perf, robot_common_action, on="robot", how="outer")
+    robot_perf = pd.merge(robot_perf, robot_algae, on="robot", how="outer")
+    robot_perf = robot_perf.fillna({"algae_count": 0})
+    
     robot_scoring = pd.merge(robot_scoring, robot_perf[["robot", "matches"]], on="robot", how="left")
     
     def compute_baseline_cycle(total_scoring, matches):
-        return 150 / (total_scoring/matches) if matches > 0 and total_scoring > 0 else math.inf
+        return 150 / (total_scoring / matches) if matches > 0 and total_scoring > 0 else math.inf
     robot_scoring["baseline_cycle"] = robot_scoring.apply(lambda r: compute_baseline_cycle(r["total_scoring_events"], r["matches"]), axis=1)
     robot_perf = pd.merge(robot_perf, robot_scoring[["robot", "total_scoring_events", "baseline_cycle"]], on="robot", how="left")
     
-    # Defensive Impact Delta:
     baseline_df = robot_scoring[["robot", "baseline_cycle"]]
     match_level = pd.merge(match_level, baseline_df, on="robot", how="left")
     match_level["def_delta"] = match_level.apply(lambda r: (r["match_cycle_time"] - r["baseline_cycle"]) if r["opponent_defense_flag"] else 0.0, axis=1)
@@ -135,7 +181,7 @@ def aggregate_data(data):
     return robot_perf, match_level
 
 #############################################
-# NEW: Compute Detailed Defensive Effects (Defender Perspective)
+# NEW: Compute Detailed Defensive Effects
 #############################################
 def compute_defensive_effects(match_level, robot_perf):
     records = []
@@ -175,14 +221,16 @@ def compute_defensive_effects(match_level, robot_perf):
         })
     if records:
         df = pd.DataFrame(records)
-        effects = df.groupby("robot").agg(def_effect_cycle=("delta_cycle", "mean"),
-                                           def_effect_points=("delta_points", "mean")).reset_index()
+        effects = df.groupby("robot").agg(
+            def_effect_cycle=("delta_cycle", "mean"),
+            def_effect_points=("delta_points", "mean")
+        ).reset_index()
     else:
         effects = pd.DataFrame(columns=["robot", "def_effect_cycle", "def_effect_points"])
     return effects
 
 #############################################
-# STEP 2: Model Training & Helper Functions
+# MODEL TRAINING & HELPER FUNCTIONS
 #############################################
 def train_model(robot_perf):
     X = robot_perf[["robot", "avg_points_per_match", "success_rate", "total_events"]].copy()
@@ -198,9 +246,16 @@ def train_model(robot_perf):
     }
     cv_strategy = KFold(n_splits=3, shuffle=True, random_state=42)
     rf = RandomForestRegressor(random_state=42, n_jobs=-1)
-    random_search = RandomizedSearchCV(estimator=rf, param_distributions=param_distributions,
-                                       n_iter=20, scoring="neg_mean_squared_error",
-                                       cv=cv_strategy, random_state=42, n_jobs=-1, verbose=0)
+    random_search = RandomizedSearchCV(
+        estimator=rf,
+        param_distributions=param_distributions,
+        n_iter=20,
+        scoring="neg_mean_squared_error",
+        cv=cv_strategy,
+        random_state=42,
+        n_jobs=-1,
+        verbose=0
+    )
     random_search.fit(X, y)
     return random_search.best_estimator_
 
@@ -220,13 +275,14 @@ def estimate_robot_performance(robot_id, global_avgs):
         "most_common_action": "Unknown",
         "total_scoring_events": 0,
         "baseline_cycle": math.inf,
-        "defensive_impact_delta": 0.0
+        "defensive_impact_delta": 0.0,
+        "algae_count": 0
     }
 
 def balanced_robot_prediction(robot_id, robot_perf, best_rf, hist_weight, global_avgs):
     robot_id = str(robot_id).strip()
     if robot_id not in robot_perf["robot"].astype(str).values:
-        print(f"Robot {robot_id} missing; using defaults.")
+        print(f"Robot {robot_id} missing in aggregated data; using defaults.")
         row = estimate_robot_performance(robot_id, global_avgs)
     else:
         row = robot_perf[robot_perf["robot"].astype(str) == robot_id].iloc[0].to_dict()
@@ -241,7 +297,7 @@ def balanced_robot_prediction(robot_id, robot_perf, best_rf, hist_weight, global
     return hist_weight * historical_avg + (1 - hist_weight) * model_pred
 
 #############################################
-# STEP 3: TBA Rankings Retrieval via API
+# TBA RANKINGS RETRIEVAL VIA API
 #############################################
 def get_tba_rankings_api(event_key, auth_key):
     headers = {"X-TBA-Auth-Key": auth_key}
@@ -261,21 +317,19 @@ def get_tba_rankings_api(event_key, auth_key):
     return rankings
 
 #############################################
-# STEP 4: Generate Explanation for Alliance Compatibility
+# GENERATE EXPLANATION FOR ALLIANCE COMPATIBILITY
 #############################################
-def generate_candidate_explanation(candidate, candidate_score, candidate_cycle, candidate_action, candidate_rank, 
+def generate_candidate_explanation(candidate_row, candidate_score, candidate_cycle, candidate_action, candidate_rank, 
                                    candidate_def_delta, user_action, user_cycle, user_rank):
+    candidate = candidate_row.get("robot", "unknown")
+    algae_explanation = "Scores Algae: Yes." if candidate_row.get("algae_count", 0) > 0 else "Scores Algae: No."
     explanation = f"Team {candidate}: "
     if candidate_rank is not None:
         explanation += f"Ranking {candidate_rank}. "
     else:
         explanation += "Ranking unknown. "
     explanation += f"Predicted avg pts/match = {candidate_score:.2f}; Baseline cycle time = {candidate_cycle:.2f} sec. "
-    explanation += f"Favorite scoring location: {candidate_action}; "
-    if "algae" in candidate_action.lower():
-        explanation += "Scores Algae: Yes. "
-    else:
-        explanation += "Scores Algae: No. "
+    explanation += f"Favorite scoring location: {candidate_action}; {algae_explanation} "
     if candidate_action.lower() == user_action.lower():
         explanation += "Scoring style similar (risk of redundancy). "
     else:
@@ -290,22 +344,8 @@ def generate_candidate_explanation(candidate, candidate_score, candidate_cycle, 
     return explanation
 
 #############################################
-# STEP 5: API Endpoints
+# API ENDPOINT FOR /analyze
 #############################################
-@app.route("/events", methods=["GET"])
-def events_endpoint():
-    events = get_unique_events()
-    return jsonify({"events": events})
-
-@app.route("/robots", methods=["GET"])
-def robots_endpoint():
-    event = request.args.get("event")
-    if not event:
-        return jsonify({"error": "Missing event parameter."}), 400
-    data = load_historical_data(event)
-    robots = data["robot"].unique().tolist()
-    return jsonify({"robots": list(map(str, robots))})
-
 @app.route("/analyze", methods=["GET"])
 def analyze():
     try:
@@ -327,24 +367,22 @@ def analyze():
         user_rank_val = tba_rankings.get(robot)
         if robot not in robot_perf["robot"].astype(str).values:
             return jsonify({"error": f"Robot {robot} not found in aggregated data."}), 400
-        user_row = robot_perf[robot_perf["robot"].astype(str) == robot].iloc[0]
-        user_most_common_action = user_row["most_common_action"]
-        user_cycle = user_row["baseline_cycle"]
+        
+        # Omit the selected robot's profile from output.
+        # We are removing the selected robot section entirely.
+        
+        user_most_common_action = robot_perf[robot_perf["robot"].astype(str) == robot].iloc[0].get("most_common_action", "Unknown")
+        user_cycle = robot_perf[robot_perf["robot"].astype(str) == robot].iloc[0].get("baseline_cycle", 0.0)
+        
         def_effects = compute_defensive_effects(match_level, robot_perf)
-        hist_weight = 0.5
+        
         candidate_details = []
+        # Build full candidate analysis list (including algae info in the explanation).
         for candidate in robot_perf["robot"].astype(str).values:
-            if candidate == robot:
-                continue
             candidate_row = robot_perf[robot_perf["robot"].astype(str) == candidate].iloc[0].to_dict()
-            cand_score = balanced_robot_prediction(candidate, robot_perf, best_rf, hist_weight, global_avgs)
+            cand_score = balanced_robot_prediction(candidate, robot_perf, best_rf, 0.5, global_avgs)
             cand_cycle = candidate_row.get("baseline_cycle", float('inf'))
             cand_action = candidate_row.get("most_common_action", "Unknown")
-            # Cast candidate action to string to avoid errors.
-            if "algae" in str(cand_action).lower():
-                scores_algae = "Yes"
-            else:
-                scores_algae = "No"
             cand_rank = tba_rankings.get(candidate)
             cand_def_delta = candidate_row.get("defensive_impact_delta", 0.0)
             def_eff = def_effects[def_effects["robot"] == candidate]
@@ -355,7 +393,7 @@ def analyze():
                 cand_def_effect_cycle = 0.0
                 cand_def_effect_points = 0.0
             explanation = generate_candidate_explanation(
-                candidate, cand_score, cand_cycle, cand_action,
+                candidate_row, cand_score, cand_cycle, cand_action,
                 cand_rank, cand_def_delta, user_most_common_action, user_cycle, user_rank_val
             )
             explanation += f"[Defensive Effect: slows opponents by {cand_def_effect_cycle:.2f} sec, reducing pts by {cand_def_effect_points:.2f}]."
@@ -364,67 +402,64 @@ def analyze():
                 "predicted_avg_pts_per_match": cand_score,
                 "baseline_cycle": cand_cycle,
                 "most_common_action": cand_action,
-                "scores_algae": scores_algae,
                 "ranking": cand_rank,
                 "defensive_impact_delta": cand_def_delta,
                 "def_effect_cycle": cand_def_effect_cycle,
                 "def_effect_points": cand_def_effect_points,
-                "explanation": explanation
+                "explanation": explanation,
+                "algae_count": candidate_row.get("algae_count", 0)
             })
         
-        # First Pick Options: teams with ranking 1 to 16 (excluding user)
-        first_pick_options = [c for c in candidate_details if c.get("ranking") is not None and 1 <= int(c["ranking"]) <= 16]
+        # For recommendation lists, remove algae info.
+        def remove_algae_info(candidate):
+            new_candidate = candidate.copy()
+            new_candidate.pop("algae_count", None)
+            return new_candidate
+        
+        first_pick_options = [
+            remove_algae_info(c) for c in candidate_details
+            if c.get("ranking") is not None and 1 <= int(c["ranking"]) <= 16 and c["robot"] != robot
+        ]
         first_pick_options.sort(key=lambda x: x["predicted_avg_pts_per_match"], reverse=True)
         
-        # Second Pick Options Offense: top 8 from teams with ranking 14 to 30
-        second_pick_offense = [c for c in candidate_details if c.get("ranking") is not None and 14 <= int(c["ranking"]) <= 30]
+        second_pick_offense = [
+            remove_algae_info(c) for c in candidate_details
+            if c.get("ranking") is not None and 14 <= int(c["ranking"]) <= 30 and c["robot"] != robot
+        ]
         second_pick_offense.sort(key=lambda x: x["predicted_avg_pts_per_match"], reverse=True)
         second_pick_offense = second_pick_offense[:8]
         
-        # Defensive Options: top 8 defensive teams with ranking >= 14 sorted by defensive effect
-        defense_options = [c for c in candidate_details if c.get("ranking") is not None and int(c["ranking"]) >= 14]
-        defense_options.sort(key=lambda x: x["def_effect_cycle"], reverse=True)
+        # Filtering the candidate list for defensive options
+        defense_options = [
+            remove_algae_info(c) for c in candidate_details
+            if c.get("ranking") is not None and int(c["ranking"]) >= 14 and c["robot"] != robot
+        ]
+        
+        # Since a more negative value means a better point reduction, sort in ascending order.
+        defense_options.sort(key=lambda x: x["def_effect_points"])
+        
+        # Select the top 8 teams with the best (most negative) Defensive Effect: Points Reduction.
         defense_options = defense_options[:8]
+
+        
+        candidate_details.sort(key=lambda x: int(x['ranking']) if x.get('ranking') is not None and str(x['ranking']).isdigit() else 9999)
         
         output = {
             "user_robot": robot,
-            "user_rank": user_rank_val,
+            "full_candidate_analysis": candidate_details,
             "first_pick_options": first_pick_options,
             "second_pick_options_offense": second_pick_offense,
             "defensive_options": defense_options,
-            "full_candidate_analysis": candidate_details,
-            "defensive_effects_summary": def_effects.to_dict(orient="records")
+            "defensive_effects_summary": def_effects.to_dict(orient="records"),
+            "user_rank": user_rank_val
         }
-        return jsonify(output)
+        
+        sanitized = sanitize_output(output)
+        return jsonify(sanitized)
     except Exception as e:
-        app.logger.error("Error in /analyze endpoint", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-    
-    # First Pick Options: all teams ranked 1 to 16 (excluding user)
-    first_pick_options = [c for c in candidate_details if c.get("ranking") is not None and 1 <= int(c["ranking"]) <= 16]
-    first_pick_options.sort(key=lambda x: x["predicted_avg_pts_per_match"], reverse=True)
-    
-    # Second Pick Options Offense: top 8 teams ranked 14 to 30
-    second_pick_offense = [c for c in candidate_details if c.get("ranking") is not None and 14 <= int(c["ranking"]) <= 30]
-    second_pick_offense.sort(key=lambda x: x["predicted_avg_pts_per_match"], reverse=True)
-    second_pick_offense = second_pick_offense[:8]
-    
-    # Defensive Options: top 8 defensive robots ranked 14+
-    defense_options = [c for c in candidate_details if c.get("ranking") is not None and int(c["ranking"]) >= 14]
-    defense_options.sort(key=lambda x: x["def_effect_cycle"], reverse=True)
-    defense_options = defense_options[:8]
-    
-    output = {
-        "user_robot": robot,
-        "user_rank": user_rank_val,
-        "first_pick_options": first_pick_options,
-        "second_pick_options_offense": second_pick_offense,
-        "defensive_options": defense_options,
-        "full_candidate_analysis": candidate_details,
-        "defensive_effects_summary": def_effects.to_dict(orient="records")
-    }
-    return jsonify(output)
+        error_details = traceback.format_exc()
+        app.logger.error("Error in /analyze endpoint:\n" + error_details)
+        return jsonify({"error": str(e), "trace": error_details}), 500
 
 if __name__ == '__main__':
     app.run(port=9105, debug=True)
