@@ -316,7 +316,7 @@ $teamPageBase = "https://www.thebluealliance.com/team/";
           <?php if (!empty($selected_event)): ?>
               <!-- Event Key Dropdown (populated from TBA API) -->
               <select name="event_key" id="event_key">
-                  <option value="">-- Select Event Key --</option>
+                  <option value="">Select Event Key</option>
                   <?php foreach ($event_keys as $key): ?>
                       <option value="<?php echo htmlspecialchars($key); ?>" <?php if ($key == $tba_event_key) echo "selected"; ?>>
                           <?php echo htmlspecialchars($key); ?>
@@ -326,7 +326,7 @@ $teamPageBase = "https://www.thebluealliance.com/team/";
               
               <!-- Robot Dropdown -->
               <select name="robot" id="robot">
-                  <option value="">-- Select Your Robot --</option>
+                  <option value="">Select Your Robot</option>
                   <?php foreach ($robots as $r): ?>
                       <option value="<?php echo htmlspecialchars($r); ?>" <?php if ($r == $selected_robot) echo "selected"; ?>>
                           <?php echo htmlspecialchars($r); ?>
@@ -605,7 +605,7 @@ is then averaged over the matches. This yields the Defensive Effect: Points Redu
                       </td>
                       <td><?php echo htmlspecialchars($nickname); ?></td>
                         <td><?php echo htmlspecialchars($detail['ranking']); ?></td>
-                      
+
                       <td><?php echo htmlspecialchars($detail['explanation']); ?></td>
                   </tr>
                   <?php endforeach; ?>

@@ -624,6 +624,13 @@ a{color:#fff}
   <a href="#" id="openChart">
     <img class="icon" src="../icons/heyitsachart.png" alt="Admin Console">
   </a>
+
+
+  <a href="alliance_picker.php" id="openChart">
+    <img class="icon" src="../icons/predict_alliance.png" alt="Admin Console">
+  </a>
+
+
 </div>
 
 <!-- Modal Markup -->
