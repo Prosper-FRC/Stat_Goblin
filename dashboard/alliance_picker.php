@@ -505,10 +505,7 @@ Prediction Calculation:
 The trained model predicts the total points, which is then divided by the number of matches to obtain a per-match average. Finally, this model-based prediction is blended with the simple historical average to produce a balanced and more robust estimate of predicted points per match.
 This multi-step approach leverages both the historical performance data and the model’s capacity to capture nonlinear relationships among multiple factors, giving teams a more nuanced prediction for their scoring performance in upcoming matches." style="cursor: pointer;">[i]</span>
         </th>
-        <th>
-            Cycle Time (sec)
-            <span class="info-icon" data-definition="Cycle time: estimated as 150 / (scoring_events) for a match, assuming a fixed match duration (150 seconds). This acts as a rough proxy for how quickly a robot scores." style="cursor: pointer;">[i]</span>
-        </th>
+ 
         <th>
     Auton Score
     <span class="info-icon" data-definition="Autonomous Score: The maximum count of successful scoring actions during the autonomous period (<=15 sec) per match. It indicates the robot's early-game performance." style="cursor: pointer;">[i]</span>
@@ -590,7 +587,7 @@ is then averaged over the matches. This yields the Defensive Effect: Points Redu
                       <td><?php echo htmlspecialchars($nickname); ?></td>
                       <td><?php echo htmlspecialchars($opt['ranking']); ?></td>
                       <td><?php echo number_format($opt['predicted_avg_pts_per_match'], 2); ?></td>
-                      <td><?php echo number_format($opt['baseline_cycle'], 2); ?></td>
+
                       <td><?php echo number_format($opt['auton_score'], 2); ?></td>
 <td><?php echo number_format($opt['defensive_impact_delta'] ?? 0, 2); ?></td>
 <td><?php echo number_format($opt['def_effect_cycle'] ?? 0, 2); ?></td>
