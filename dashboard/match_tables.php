@@ -119,7 +119,7 @@ if (!empty($selected_event) && !empty($selected_robot)) {
 
     .match-section {
       margin: 20px auto;
-      background: #333;
+      background: #111;
       border: 1px solid #ccc;
       border-radius: 5px;
       padding: 15px;
@@ -296,7 +296,7 @@ if (!empty($selected_event) && !empty($selected_robot)) {
   </script>
 </head>
 <body>
-     <a href=".."><img src="../images/owlAnalytics.png" class="logo" alt="Logo"></a>
+     <a href="."><img src="../images/owlAnalytics.png" class="logo" alt="Logo"></a>
   <h1>Match Analysis Dashboard</h1>
   
   <!-- Form for selecting event and robot -->

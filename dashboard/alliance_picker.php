@@ -300,7 +300,7 @@ $teamPageBase = "https://www.thebluealliance.com/team/";
 
 
 
-      <a href=".."><img src="../images/owlAnalytics.png" class="logo" alt="Logo"></a>
+      <a href="."><img src="../images/owlAnalytics.png" class="logo" alt="Logo"></a>
 
       <form method="GET" action="alliance_picker.php">
           <!-- Event Name Dropdown -->

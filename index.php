@@ -58,7 +58,7 @@
       /* For wider screens, switch to 5 columns */
       @media (min-width: 768px) {
       .grid-container {
-      grid-template-columns: repeat(3, 2fr);
+      grid-template-columns: repeat(4, 2fr);
       }
       }
       .grid-item {
@@ -96,10 +96,7 @@
             <label for="eventDropdown"><strong>Owl Admin Console:</strong></label>
             <a href ="admin-console/"><img class="icon" src="icons/admin.png" alt="Admin Console"></a>
           </div>
-          <div class="grid-item">
-            <label for="eventDropdown"><strong>Owl Tv:</strong></label>
-            <a href ="dashboard/tv.php"><img class="icon" src="icons/tv.png" alt="Admin Console" ></a>
-          </div>
+
           <div class="grid-item">
             <label for="eventDropdown"><strong>Owl Analytics:</strong></label>
             <a href ="dashboard/"><img class="icon" src="icons/analytics.png" alt="scouter app"></a>
@@ -113,10 +110,7 @@
 
 
 
-             <div class="grid-item">
-            <label for="eventDropdown"><strong>Talon Tables:</strong></label>
-            <a href ="dashboard/stat_owl_event.php"><img class="icon" src="icons/table.png" alt="event Table" ></a>
-          </div>
+    
 
         </div>
       </div>

@@ -597,7 +597,7 @@ a{color:#fff}
 </head>
 <body>
 
-      <a href="..">
+      <a href=".">
         <img src="../images/theStatOwl.png" class="logo" alt="Logo">
     </a>
 
@@ -626,9 +626,7 @@ a{color:#fff}
   </a>
 
 
-  <a href="alliance_picker.php" id="openChart">
-    <img class="icon" src="../icons/predict_alliance.png" alt="Admin Console">
-  </a>
+
 
 
 </div>
